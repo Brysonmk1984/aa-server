@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: aa
+      POSTGRES_USER: postgres
+    ports:
+      - "5915:5432"
+    volumes:
+      - aa-postgres:/var/lib/postgresql/data
+
+volumes:
+  aa-postgres:

@@ -1,0 +1,21 @@
+[package]
+name = "armies-of-avalon-api"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+armies-of-avalon-service = { path = "../service" }
+tokio = { version = "1.28.2", features = ["full"] }
+axum = "0.6.18"
+tower = "0.4.13"
+tower-http = { version = "0.3.5", features = ["fs"] }
+tower-cookies = "0.8.0"
+anyhow = "1.0.71"
+dotenvy = "0.15.7"
+serde = "1.0.164"
+serde_json = "1.0.99"
+tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
+entity = { path = "../entity" }
+migration = { path = "../migration" }
