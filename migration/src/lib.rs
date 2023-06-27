@@ -1,14 +1,20 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+pub use sea_orm_migration::prelude::*;
+mod m20220101_000001_create_table;
+mod m20230623_232009_update_shield_rating;
+mod m20230624_132859_add_monk;
+mod m20230624_140621_add_imperial_legionnaire;
+mod utils;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub struct Migrator;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+#[async_trait::async_trait]
+impl MigratorTrait for Migrator {
+    fn migrations() -> Vec<Box<dyn MigrationTrait>> {
+        vec![
+            Box::new(m20220101_000001_create_table::Migration),
+            Box::new(m20230623_232009_update_shield_rating::Migration),
+            Box::new(m20230624_132859_add_monk::Migration),
+            Box::new(m20230624_140621_add_imperial_legionnaire::Migration),
+        ]
     }
 }
