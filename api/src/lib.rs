@@ -1,7 +1,6 @@
-use ::entity::armies::Entity as Armies;
 use armies_of_avalon_service::sea_orm::{Database, DatabaseConnection};
 use armies_of_avalon_service::Query;
-use axum::{extract::State, http::StatusCode, routing::get, Json, Router, Server};
+use axum::{extract::Path, extract::State, http::StatusCode, routing::get, Json, Router, Server};
 use entity::armies::Model;
 use migration::{Migrator, MigratorTrait};
 use std::str::FromStr;
@@ -26,7 +25,10 @@ async fn start() -> anyhow::Result<()> {
 
     let state = AppState { conn };
 
-    let app: Router = Router::new().route("/", get(get_armies)).with_state(state);
+    let app: Router = Router::new()
+        .route("/", get(get_all_armies))
+        .route("/:id", get(get_army))
+        .with_state(state);
 
     let host = env::var("HOST").expect("HOST is not set in .env file");
     let port = env::var("PORT").expect("PORT is not set in .env file");
@@ -39,8 +41,21 @@ async fn start() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn get_armies(state: State<AppState>) -> Result<Json<Model>, (StatusCode, &'static str)> {
-    let army = Query::find_army_by_id(&state.conn, 1)
+async fn get_all_armies(
+    state: State<AppState>,
+) -> Result<Json<Vec<Model>>, (StatusCode, &'static str)> {
+    let armies = Query::get_all_armies(&state.conn)
+        .await
+        .expect("Cannot get all armies!");
+
+    Ok(Json(armies))
+}
+
+async fn get_army(
+    state: State<AppState>,
+    Path(id): Path<i32>,
+) -> Result<Json<Model>, (StatusCode, &'static str)> {
+    let army = Query::find_army_by_id(&state.conn, id)
         .await
         .expect("Cannot retrieve army by id!")
         .unwrap();

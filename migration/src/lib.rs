@@ -3,6 +3,7 @@ mod m20220101_000001_create_table;
 mod m20230623_232009_update_shield_rating;
 mod m20230624_132859_add_monk;
 mod m20230624_140621_add_imperial_legionnaire;
+mod m20230628_142201_north_glade_longbow_men;
 mod utils;
 
 pub struct Migrator;
@@ -15,6 +16,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20230623_232009_update_shield_rating::Migration),
             Box::new(m20230624_132859_add_monk::Migration),
             Box::new(m20230624_140621_add_imperial_legionnaire::Migration),
+            Box::new(m20230628_142201_north_glade_longbow_men::Migration),
         ]
     }
 }

@@ -19,18 +19,24 @@ impl Query {
         Armies::find_by_id(id).one(db).await
     }
 
-    // pub async fn find_posts_in_page(
-    //     db: &DbConn,
-    //     page: u64,
-    //     posts_per_page: u64,
-    // ) -> Result<(Vec<post::Model>, u64), DbErr> {
-    //     // Setup paginator
-    //     let paginator = Post::find()
-    //         .order_by_asc(post::Column::Id)
-    //         .paginate(db, posts_per_page);
-    //     let num_pages = paginator.num_pages().await?;
-
-    //     // Fetch paginated posts
-    //     paginator.fetch_page(page - 1).await.map(|p| (p, num_pages))
-    // }
+    pub async fn get_all_armies(
+        db: &DbConn,
+    ) -> Result<Vec<<Armies as sea_orm::EntityTrait>::Model>, DbErr> {
+        Armies::find().all(db).await
+    }
 }
+
+// pub async fn find_posts_in_page(
+//     db: &DbConn,
+//     page: u64,
+//     posts_per_page: u64,
+// ) -> Result<(Vec<post::Model>, u64), DbErr> {
+//     // Setup paginator
+//     let paginator = Post::find()
+//         .order_by_asc(post::Column::Id)
+//         .paginate(db, posts_per_page);
+//     let num_pages = paginator.num_pages().await?;
+
+//     // Fetch paginated posts
+//     paginator.fetch_page(page - 1).await.map(|p| (p, num_pages))
+// }
