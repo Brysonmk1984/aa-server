@@ -1,10 +1,13 @@
 use armies_of_avalon_service::sea_orm::{Database, DatabaseConnection};
 use armies_of_avalon_service::Query;
+use axum::http::Method;
 use axum::{extract::Path, extract::State, http::StatusCode, routing::get, Json, Router, Server};
 use entity::armies::Model;
 use migration::{Migrator, MigratorTrait};
 use std::str::FromStr;
 use std::{env, net::SocketAddr};
+use tower::ServiceBuilder;
+use tower_http::cors::{Any, CorsLayer};
 
 #[derive(Clone)]
 struct AppState {
@@ -28,6 +31,21 @@ async fn start() -> anyhow::Result<()> {
     let app: Router = Router::new()
         .route("/", get(get_all_armies))
         .route("/:id", get(get_army))
+        .layer(
+            ServiceBuilder::new().layer(
+                CorsLayer::new()
+                    // allow `GET` and `POST` when accessing the resource
+                    .allow_methods([
+                        Method::GET,
+                        Method::POST,
+                        Method::PATCH,
+                        Method::PUT,
+                        Method::DELETE,
+                    ])
+                    // allow requests from any origin
+                    .allow_origin(Any),
+            ),
+        )
         .with_state(state);
 
     let host = env::var("HOST").expect("HOST is not set in .env file");
