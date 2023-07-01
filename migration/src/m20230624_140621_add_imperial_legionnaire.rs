@@ -8,7 +8,7 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        let sql = "INSERT INTO armies VALUES (DEFAULT, 'Imperial Legionnaire', 'TBD', 1000, 50, 100, 80, 7.25, false, 15)";
+        let sql = "INSERT INTO armies VALUES (DEFAULT, 'Imperial Legionnaire', 'TBD', 1000, 50, false, 100, 80, 7.25,  15)";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
         raw_sql_migration(manager, statement).await
     }

@@ -11,13 +11,20 @@ pub struct Model {
     pub name: String,
     pub lore: String,
     pub size: i32,
-    pub damage: i32,
-    pub health: i32,
-    pub armor: i32,
-    #[sea_orm(column_type = "Decimal(Some((5, 2)))")]
+    #[sea_orm(column_type = "Decimal(Some((3, 2)))")]
     pub shield_rating: Decimal,
     pub flying: bool,
     pub range: i32,
+    #[sea_orm(column_type = "Decimal(Some((3, 2)))")]
+    pub attack_speed: Decimal,
+    #[sea_orm(column_type = "Decimal(Some((3, 2)))")]
+    pub accuracy: Decimal,
+    pub aoe: bool,
+    pub weapon_type: String,
+    pub armor_type: String,
+    #[sea_orm(column_type = "Decimal(Some((3, 2)))")]
+    pub agility: Decimal,
+    pub speed: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
