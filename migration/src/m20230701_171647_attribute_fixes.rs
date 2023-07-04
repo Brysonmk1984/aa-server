@@ -11,9 +11,6 @@ impl MigrationTrait for Migration {
         let sql = "
             ALTER TABLE armies 
                 ALTER COLUMN shield_rating type numeric(3,2),
-                DROP COLUMN health,
-                DROP COLUMN damage,
-                DROP COLUMN armor,
                 ADD COLUMN attack_speed numeric(3,2) NOT NULL DEFAULT 0.00,
                 ADD COLUMN accuracy numeric(3,2) NOT NULL DEFAULT 0.00,
                 ADD COLUMN aoe BOOLEAN NOT NULL DEFAULT FALSE,
@@ -30,9 +27,6 @@ impl MigrationTrait for Migration {
         let sql = "
             ALTER TABLE armies 
                 ALTER COLUMN shield_rating type numeric(5,2),
-                ADD COLUMN health int NOT NULL DEFAULT 100,
-                ADD COLUMN damage int NOT NULL DEFAULT 100,
-                ADD COLUMN armor int NOT NULL DEFAULT 100,
                 DROP COLUMN attack_speed,
                 DROP COLUMN accuracy,
                 DROP COLUMN aoe,

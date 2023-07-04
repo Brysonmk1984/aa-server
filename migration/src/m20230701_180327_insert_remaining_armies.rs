@@ -10,6 +10,11 @@ impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
             INSERT INTO armies VALUES 
+                (DEFAULT, 'Peacekeeper Monks', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
+                (DEFAULT, 'Imperial Legionnaire', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
+                (DEFAULT, 'North Watch Longbowmen', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
+                (DEFAULT, 'Highborn Cavalry', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
+
                 (DEFAULT, 'Rōnin Immortals', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
                 (DEFAULT, 'Shinobi Assassins', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
 
@@ -25,7 +30,11 @@ impl MigrationTrait for Migration {
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
             DELETE FROM armies 
-                WHERE name='Rōnin Immortals' 
+                WHERE name='Peacekeeper Monks'
+                OR name='Imperial Legionnaire'
+                OR name='North Watch Longbowmen'
+                OR name='Highborn Cavalry'
+                OR name='Rōnin Immortals' 
                 OR name='Shinobi Assassins'
                 OR name='Amazonian Huntresses'
                 OR name='Avian Cliff Dwellers'
