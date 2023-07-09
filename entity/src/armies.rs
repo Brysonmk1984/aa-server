@@ -10,7 +10,7 @@ pub struct Model {
     pub id: i32,
     pub name: String,
     pub lore: String,
-    pub size: i32,
+    pub count: i32,
     #[sea_orm(column_type = "Decimal(Some((3, 2)))")]
     pub shield_rating: Decimal,
     pub flying: bool,
