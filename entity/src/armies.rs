@@ -19,7 +19,10 @@ pub struct Model {
     pub attack_speed: Decimal,
     #[sea_orm(column_type = "Decimal(Some((3, 2)))")]
     pub accuracy: Decimal,
-    pub aoe: bool,
+    #[sea_orm(column_type = "Decimal(Some((3, 2)))")]
+    pub aoe: Decimal,
+    #[sea_orm(column_type = "Decimal(Some((3, 2)))")]
+    pub spread: Decimal,
     pub weapon_type: String,
     pub armor_type: String,
     #[sea_orm(column_type = "Decimal(Some((3, 2)))")]
