@@ -5,6 +5,7 @@ mod m20230701_171647_attribute_fixes;
 mod m20230701_180327_insert_remaining_armies;
 mod m20230709_184100_col_change_pad_change;
 mod m20230709_185756_size_col_name_change;
+mod m20230813_144846_aoe_support;
 mod utils;
 
 pub struct Migrator;
@@ -19,6 +20,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20230701_180327_insert_remaining_armies::Migration),
             Box::new(m20230709_184100_col_change_pad_change::Migration),
             Box::new(m20230709_185756_size_col_name_change::Migration),
+            Box::new(m20230813_144846_aoe_support::Migration),
         ]
     }
 }
