@@ -15,8 +15,7 @@ pub struct Model {
     pub shield_rating: Decimal,
     pub flying: bool,
     pub range: i32,
-    #[sea_orm(column_type = "Decimal(Some((3, 2)))")]
-    pub attack_speed: Decimal,
+    pub attack_speed: i32,
     #[sea_orm(column_type = "Decimal(Some((3, 2)))")]
     pub accuracy: Decimal,
     #[sea_orm(column_type = "Decimal(Some((3, 2)))")]

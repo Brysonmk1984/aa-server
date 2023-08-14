@@ -23,6 +23,8 @@ pub enum Armies {
     ShieldRating,
     Flying,
     Range,
+    AttackSpeed,
+    Spread,
     Accuracy,
     Aoe,
     WeaponType,
