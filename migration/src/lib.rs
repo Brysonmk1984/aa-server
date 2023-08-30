@@ -7,6 +7,8 @@ mod m20230709_184100_col_change_pad_change;
 mod m20230709_185756_size_col_name_change;
 mod m20230813_144846_aoe_support;
 mod m20230814_134648_switch_attack_speed;
+mod m20230830_133912_add_nation_table;
+mod m20230830_140229_add_nation_armies_table;
 mod utils;
 
 pub struct Migrator;
@@ -23,6 +25,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20230709_185756_size_col_name_change::Migration),
             Box::new(m20230813_144846_aoe_support::Migration),
             Box::new(m20230814_134648_switch_attack_speed::Migration),
+            Box::new(m20230830_133912_add_nation_table::Migration),
+            Box::new(m20230830_140229_add_nation_armies_table::Migration),
         ]
     }
 }
