@@ -2,14 +2,16 @@ use armies_of_avalon_service::sea_orm::{Database, DatabaseConnection};
 use armies_of_avalon_service::Query;
 use axum::http::Method;
 use axum::{extract::Path, extract::State, http::StatusCode, routing::get, Json, Router, Server};
-use entity::armies::Model;
+use entity::armies::Model as ArmyModel;
+use entity::nation_armies::Model as NationArmiesModel;
+use entity::nations::Model as NationsModel;
 use migration::{Migrator, MigratorTrait};
 use std::str::FromStr;
 use std::{env, net::SocketAddr};
 use tower::ServiceBuilder;
 use tower_http::cors::{Any, CorsLayer};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct AppState {
     conn: DatabaseConnection,
 }
@@ -27,10 +29,9 @@ async fn start() -> anyhow::Result<()> {
     Migrator::up(&conn, None).await.unwrap();
 
     let state = AppState { conn };
-
     let app: Router = Router::new()
         .route("/", get(get_all_armies))
-        .route("/:id", get(get_army))
+        //.route("/:id", get(get_army))
         .layer(
             ServiceBuilder::new().layer(
                 CorsLayer::new()
@@ -59,9 +60,11 @@ async fn start() -> anyhow::Result<()> {
     Ok(())
 }
 
+async fn test_fn() {}
+
 async fn get_all_armies(
     state: State<AppState>,
-) -> Result<Json<Vec<Model>>, (StatusCode, &'static str)> {
+) -> Result<Json<Vec<ArmyModel>>, (StatusCode, &'static str)> {
     let armies = Query::get_all_armies(&state.conn)
         .await
         .expect("Cannot get all armies!");
@@ -72,7 +75,7 @@ async fn get_all_armies(
 async fn get_army(
     state: State<AppState>,
     Path(id): Path<i32>,
-) -> Result<Json<Model>, (StatusCode, &'static str)> {
+) -> Result<Json<ArmyModel>, (StatusCode, &'static str)> {
     let army = Query::find_army_by_id(&state.conn, id)
         .await
         .expect("Cannot retrieve army by id!")

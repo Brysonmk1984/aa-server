@@ -1,5 +1,6 @@
-use crate::utils::raw_sql_migration;
 use sea_orm_migration::{prelude::*, sea_orm::Statement};
+
+use crate::utils::raw_sql_migration;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -8,14 +9,9 @@ pub struct Migration;
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
-            CREATE TABLE nation_armies (
-                id SERIAL PRIMARY KEY,
-                nation_id INT NOT NULL,
-                army_id INT NOT NULL,
-                count INT NOT NULL DEFAULT 0,
-                CONSTRAINT fk_nation FOREIGN KEY(nation_id) REFERENCES nations(id),
-                CONSTRAINT fk_army FOREIGN KEY(army_id) REFERENCES armies(id)
-            );
+            ALTER TABLE armies
+            ADD CONSTRAINT unique_name
+            UNIQUE USING INDEX unique_name
         ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
         raw_sql_migration(manager, statement).await
@@ -23,7 +19,8 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
-            DROP TABLE nation_armies;
+            ALTER TABLE armies
+            DROP CONSTRAINT unique_name
         ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
         raw_sql_migration(manager, statement).await
