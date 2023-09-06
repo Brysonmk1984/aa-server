@@ -3,10 +3,12 @@
 
 // pub use mutation::*;
 // pub use query::*;
-
+#![allow(warnings)]
 pub use sea_orm;
 
 use ::entity::armies::Entity as Armies;
+use ::entity::nation_armies::{Entity as NationArmies, Model as NationArmiesModel};
+use ::entity::nations::{Entity as Nations, Model as NationsModel};
 use sea_orm::*;
 
 pub struct Query;
@@ -24,19 +26,17 @@ impl Query {
     ) -> Result<Vec<<Armies as sea_orm::EntityTrait>::Model>, DbErr> {
         Armies::find().all(db).await
     }
+
+    pub async fn get_nation_with_nation_armies(
+        db: &DbConn,
+        id: i32,
+    ) -> Result<Vec<(NationsModel, Vec<NationArmiesModel>)>, DbErr> {
+        println!("ASDASDASDADSASDASDDASADS {id}");
+        let result = Nations::find_by_id(id)
+            .find_with_related(NationArmies)
+            .all(db)
+            .await?;
+
+        Ok(result)
+    }
 }
-
-// pub async fn find_posts_in_page(
-//     db: &DbConn,
-//     page: u64,
-//     posts_per_page: u64,
-// ) -> Result<(Vec<post::Model>, u64), DbErr> {
-//     // Setup paginator
-//     let paginator = Post::find()
-//         .order_by_asc(post::Column::Id)
-//         .paginate(db, posts_per_page);
-//     let num_pages = paginator.num_pages().await?;
-
-//     // Fetch paginated posts
-//     paginator.fetch_page(page - 1).await.map(|p| (p, num_pages))
-// }

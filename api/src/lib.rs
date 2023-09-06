@@ -1,9 +1,10 @@
+#![allow(warnings)]
 use armies_of_avalon_service::sea_orm::{Database, DatabaseConnection};
 use armies_of_avalon_service::Query;
 use axum::http::Method;
 use axum::{extract::State, http::StatusCode, routing::get, Json, Router, Server};
-use axum_macros::debug_handler;
-use entity::armies::Model;
+
+use entity::armies::Model as ArmiesModel;
 // use entity::nation_armies::Model as NationArmiesModel;
 // use entity::nations::Model as NationsModel;
 use migration::{Migrator, MigratorTrait};
@@ -32,7 +33,7 @@ async fn start() -> anyhow::Result<()> {
     let state = AppState { conn };
     let app: Router = Router::new()
         .route("/", get(get_all_armies))
-        //.route("/:id", get(get_army))
+        .route("/matchup", get(get_matchup))
         .layer(
             ServiceBuilder::new().layer(
                 CorsLayer::new()
@@ -62,7 +63,7 @@ async fn start() -> anyhow::Result<()> {
 }
 async fn get_all_armies(
     state: State<AppState>,
-) -> Result<Json<Vec<Model>>, (StatusCode, &'static str)> {
+) -> Result<Json<Vec<ArmiesModel>>, (StatusCode, &'static str)> {
     let armies = Query::get_all_armies(&state.conn)
         .await
         .expect("Cannot get all armies!");
@@ -70,17 +71,24 @@ async fn get_all_armies(
     Ok(Json(armies))
 }
 
-// async fn get_army(
-//     state: State<AppState>,
-//     Path(id): Path<i32>,
-// ) -> Result<Json<ArmyModel>, (StatusCode, &'static str)> {
-//     let army = Query::find_army_by_id(&state.conn, id)
-//         .await
-//         .expect("Cannot retrieve army by id!")
-//         .unwrap();
+async fn get_matchup(
+    state: State<AppState>,
+) -> Result<
+    Json<Vec<(entity::nations::Model, Vec<entity::nation_armies::Model>)>>,
+    (StatusCode, &'static str),
+> {
+    let mut nation_and_nation_armies_one = Query::get_nation_with_nation_armies(&state.conn, 1)
+        .await
+        .expect("Cannot get nation with armies!");
+    let mut nation_and_nation_armies_two = Query::get_nation_with_nation_armies(&state.conn, 2)
+        .await
+        .expect("Cannot get nation with armies!");
 
-//     Ok(Json(army))
-// }
+    println!("{nation_and_nation_armies_one:?} {nation_and_nation_armies_two:?}");
+    nation_and_nation_armies_one.append(&mut nation_and_nation_armies_two);
+
+    Ok(Json(nation_and_nation_armies_one))
+}
 
 pub fn main() {
     let result = start();
