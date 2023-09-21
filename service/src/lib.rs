@@ -31,7 +31,6 @@ impl Query {
         db: &DbConn,
         id: i32,
     ) -> Result<Vec<(NationsModel, Vec<NationArmiesModel>)>, DbErr> {
-        println!("ASDASDASDADSASDASDDASADS {id}");
         let result = Nations::find_by_id(id)
             .find_with_related(NationArmies)
             .all(db)
