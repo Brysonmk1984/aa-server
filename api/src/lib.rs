@@ -4,6 +4,7 @@ use armies_of_avalon_service::Query;
 use axum::http::Method;
 use axum::{extract::State, http::StatusCode, routing::get, Json, Router, Server};
 
+use axum_macros::debug_handler;
 use entity::armies::Model as ArmiesModel;
 // use entity::nation_armies::Model as NationArmiesModel;
 // use entity::nations::Model as NationsModel;
@@ -61,6 +62,7 @@ async fn start() -> anyhow::Result<()> {
 
     Ok(())
 }
+#[debug_handler]
 async fn get_all_armies(
     state: State<AppState>,
 ) -> Result<Json<Vec<ArmiesModel>>, (StatusCode, &'static str)> {
@@ -70,7 +72,7 @@ async fn get_all_armies(
 
     Ok(Json(armies))
 }
-
+#[debug_handler]
 async fn get_matchup(
     state: State<AppState>,
 ) -> Result<
