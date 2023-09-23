@@ -5,3 +5,4 @@ pub mod prelude;
 pub mod armies;
 pub mod nation_armies;
 pub mod nations;
+pub mod users;
