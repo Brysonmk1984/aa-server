@@ -13,6 +13,8 @@ mod m20230830_140229_add_unique_name_table_constraint;
 mod m20230830_140230_add_nation_armies_table;
 mod m20230923_140246_add_user_table;
 mod m20230923_143157_update_nation_table_user_fk;
+mod m20230924_233249_add_unique_sub_constriant;
+mod m20230924_233539_add_unique_sub_table_constraint;
 mod utils;
 
 pub struct Migrator;
@@ -35,6 +37,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20230830_140230_add_nation_armies_table::Migration),
             Box::new(m20230923_140246_add_user_table::Migration),
             Box::new(m20230923_143157_update_nation_table_user_fk::Migration),
+            Box::new(m20230924_233249_add_unique_sub_constriant::Migration),
+            Box::new(m20230924_233539_add_unique_sub_table_constraint::Migration),
         ]
     }
 }

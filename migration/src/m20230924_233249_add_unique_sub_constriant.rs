@@ -1,0 +1,22 @@
+use sea_orm_migration::{prelude::*, sea_orm::Statement};
+
+use crate::utils::raw_sql_migration;
+
+#[derive(DeriveMigrationName)]
+pub struct Migration;
+
+#[async_trait::async_trait]
+impl MigrationTrait for Migration {
+    async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        let sql = "
+            CREATE UNIQUE INDEX unique_sub
+            ON users (auth0_sub);
+        ";
+        let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
+        raw_sql_migration(manager, statement).await
+    }
+
+    async fn down(&self, _: &SchemaManager) -> Result<(), DbErr> {
+        Ok(())
+    }
+}
