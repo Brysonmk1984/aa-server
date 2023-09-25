@@ -1,11 +1,13 @@
 #![allow(warnings)]
 use armies_of_avalon_service::sea_orm::{Database, DatabaseConnection};
-use armies_of_avalon_service::Query;
+use armies_of_avalon_service::{Auth0UserPart, Mutation, Query};
 use axum::http::Method;
+use axum::routing::{post, put};
 use axum::{extract::State, http::StatusCode, routing::get, Json, Router, Server};
 
 use axum_macros::debug_handler;
 use entity::armies::Model as ArmiesModel;
+use entity::users::Model as UsersModel;
 // use entity::nation_armies::Model as NationArmiesModel;
 // use entity::nations::Model as NationsModel;
 use migration::{Migrator, MigratorTrait};
@@ -34,6 +36,7 @@ async fn start() -> anyhow::Result<()> {
     let state = AppState { conn };
     let app: Router = Router::new()
         .route("/", get(get_all_armies))
+        .route("/users", post(create_or_update_user))
         .route("/matchup", get(get_matchup))
         .layer(
             ServiceBuilder::new().layer(
@@ -72,6 +75,7 @@ async fn get_all_armies(
 
     Ok(Json(armies))
 }
+
 #[debug_handler]
 async fn get_matchup(
     state: State<AppState>,
@@ -90,6 +94,23 @@ async fn get_matchup(
     nation_and_nation_armies_one.append(&mut nation_and_nation_armies_two);
 
     Ok(Json(nation_and_nation_armies_one))
+}
+
+#[debug_handler]
+async fn create_or_update_user(
+    state: State<AppState>,
+) -> Result<Json<UsersModel>, (StatusCode, &'static str)> {
+    let partial_user = Auth0UserPart {
+        email: "bryson@mail.com".to_string(),
+        email_verified: false,
+        sub: "some_string1".to_string(),
+    };
+
+    let user = Mutation::insert_or_return_user(&state.conn, partial_user)
+        .await
+        .expect("Could not insert or return user!");
+
+    Ok(Json(user))
 }
 
 pub fn main() {

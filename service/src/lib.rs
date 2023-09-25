@@ -1,14 +1,11 @@
-// mod mutation;
-// mod query;
-
-// pub use mutation::*;
-// pub use query::*;
 #![allow(warnings)]
 pub use sea_orm;
 
 use ::entity::armies::Entity as Armies;
 use ::entity::nation_armies::{Entity as NationArmies, Model as NationArmiesModel};
 use ::entity::nations::{Entity as Nations, Model as NationsModel};
+use ::entity::users::{self, Column, Entity as Users, Model as UsersModel};
+use sea_orm::sea_query::OnConflict;
 use sea_orm::*;
 
 pub struct Query;
@@ -37,5 +34,45 @@ impl Query {
             .await?;
 
         Ok(result)
+    }
+}
+
+pub struct Mutation;
+
+#[derive(Debug, Clone)]
+pub struct Auth0UserPart {
+    pub email: String,
+    pub email_verified: bool,
+    pub sub: String,
+}
+
+impl Mutation {
+    pub async fn insert_or_return_user(
+        db: &DbConn,
+        partial_user: Auth0UserPart,
+    ) -> Result<UsersModel, DbErr> {
+        let user = users::ActiveModel {
+            email: Set(partial_user.email.to_owned()),
+            email_verified: Set(partial_user.email_verified.to_owned()),
+            auth0_sub: Set(partial_user.sub.to_owned()),
+            ..Default::default()
+        };
+
+        let result = user.clone().insert(db).await;
+
+        match result {
+            Ok(u) => {
+                println!("{u:#?}");
+                Ok(u.try_into_model().unwrap() as UsersModel)
+            }
+            Err(error) => {
+                let user = Users::find()
+                    .filter(users::Column::Auth0Sub.eq(&partial_user.sub))
+                    .one(db)
+                    .await?;
+
+                Ok(user.unwrap() as UsersModel)
+            }
+        }
     }
 }
