@@ -7,6 +7,7 @@ use ::entity::nations::{Entity as Nations, Model as NationsModel};
 use ::entity::users::{self, Column, Entity as Users, Model as UsersModel};
 use sea_orm::sea_query::OnConflict;
 use sea_orm::*;
+use serde::Deserialize;
 
 pub struct Query;
 
@@ -39,11 +40,11 @@ impl Query {
 
 pub struct Mutation;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Auth0UserPart {
     pub email: String,
     pub email_verified: bool,
-    pub sub: String,
+    pub auth0_sub: String,
 }
 
 impl Mutation {
@@ -54,7 +55,7 @@ impl Mutation {
         let user = users::ActiveModel {
             email: Set(partial_user.email.to_owned()),
             email_verified: Set(partial_user.email_verified.to_owned()),
-            auth0_sub: Set(partial_user.sub.to_owned()),
+            auth0_sub: Set(partial_user.auth0_sub.to_owned()),
             ..Default::default()
         };
 
@@ -67,7 +68,7 @@ impl Mutation {
             }
             Err(error) => {
                 let user = Users::find()
-                    .filter(users::Column::Auth0Sub.eq(&partial_user.sub))
+                    .filter(users::Column::Auth0Sub.eq(&partial_user.auth0_sub))
                     .one(db)
                     .await?;
 

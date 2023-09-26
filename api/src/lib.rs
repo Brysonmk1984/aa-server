@@ -1,7 +1,8 @@
 #![allow(warnings)]
 use armies_of_avalon_service::sea_orm::{Database, DatabaseConnection};
 use armies_of_avalon_service::{Auth0UserPart, Mutation, Query};
-use axum::http::Method;
+use axum::body::{self, Body};
+use axum::http::{HeaderName, Method, Request};
 use axum::routing::{post, put};
 use axum::{extract::State, http::StatusCode, routing::get, Json, Router, Server};
 
@@ -15,6 +16,8 @@ use std::str::FromStr;
 use std::{env, net::SocketAddr};
 use tower::ServiceBuilder;
 use tower_http::cors::{Any, CorsLayer};
+
+//pub const ACCESS_CONTROL_ALLOW_METHODS: HeaderName::from_static("Content-Type");
 
 #[derive(Clone, Debug)]
 struct AppState {
@@ -38,21 +41,7 @@ async fn start() -> anyhow::Result<()> {
         .route("/", get(get_all_armies))
         .route("/users", post(create_or_update_user))
         .route("/matchup", get(get_matchup))
-        .layer(
-            ServiceBuilder::new().layer(
-                CorsLayer::new()
-                    // allow `GET` and `POST` when accessing the resource
-                    .allow_methods([
-                        Method::GET,
-                        Method::POST,
-                        Method::PATCH,
-                        Method::PUT,
-                        Method::DELETE,
-                    ])
-                    // allow requests from any origin
-                    .allow_origin(Any),
-            ),
-        )
+        .layer(CorsLayer::permissive())
         .with_state(state);
 
     let host = env::var("HOST").expect("HOST is not set in .env file");
@@ -98,12 +87,14 @@ async fn get_matchup(
 
 #[debug_handler]
 async fn create_or_update_user(
-    state: State<AppState>,
+    State(state): State<AppState>,
+    Json(body): Json<Auth0UserPart>,
 ) -> Result<Json<UsersModel>, (StatusCode, &'static str)> {
+    println!("{body:?}");
     let partial_user = Auth0UserPart {
-        email: "bryson@mail.com".to_string(),
-        email_verified: false,
-        sub: "some_string1".to_string(),
+        email: body.email.to_string(),
+        email_verified: body.email_verified,
+        auth0_sub: body.auth0_sub.to_string(),
     };
 
     let user = Mutation::insert_or_return_user(&state.conn, partial_user)
