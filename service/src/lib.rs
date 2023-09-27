@@ -1,10 +1,11 @@
 #![allow(warnings)]
 pub use sea_orm;
 
-use ::entity::armies::Entity as Armies;
-use ::entity::nation_armies::{Entity as NationArmies, Model as NationArmiesModel};
-use ::entity::nations::{Entity as Nations, Model as NationsModel};
+use ::entity::armies::{self, Entity as Armies, Model};
+use ::entity::nation_armies::{self, Entity as NationArmies, Model as NationArmiesModel};
+use ::entity::nations::{self, Entity as Nations, Model as NationsModel};
 use ::entity::users::{self, Column, Entity as Users, Model as UsersModel};
+use sea_orm::prelude::Uuid;
 use sea_orm::sea_query::OnConflict;
 use sea_orm::*;
 use serde::Deserialize;
@@ -35,6 +36,31 @@ impl Query {
             .await?;
 
         Ok(result)
+    }
+
+    pub async fn get_nation_with_nation_armies_by_user_id(
+        db: &DbConn,
+        user_id: Uuid,
+    ) -> Result<(NationsModel, Vec<NationArmiesModel>), DbErr> {
+        let nation = Nations::find()
+            .filter(nations::Column::UserId.eq(user_id))
+            .one(db)
+            .await?;
+
+        if nation.is_none() {
+            panic!("No nation for user {}", user_id)
+        }
+
+        let nation_id = &nation.clone().unwrap().id;
+        let nation_armies = NationArmies::find()
+            .filter(nation_armies::Column::NationId.eq(*nation_id))
+            .all(db)
+            .await;
+
+        match nation_armies {
+            Ok(n_armies) => Ok((nation.unwrap(), n_armies)),
+            Err(_) => Ok((nation.unwrap(), vec![])),
+        }
     }
 }
 

@@ -2,15 +2,16 @@
 use armies_of_avalon_service::sea_orm::{Database, DatabaseConnection};
 use armies_of_avalon_service::{Auth0UserPart, Mutation, Query};
 use axum::body::{self, Body};
+use axum::extract::Path;
 use axum::http::{HeaderName, Method, Request};
 use axum::routing::{post, put};
 use axum::{extract::State, http::StatusCode, routing::get, Json, Router, Server};
 
 use axum_macros::debug_handler;
 use entity::armies::Model as ArmiesModel;
+use entity::nation_armies::Model as NationArmiesModel;
+use entity::nations::Model as NationsModel;
 use entity::users::Model as UsersModel;
-// use entity::nation_armies::Model as NationArmiesModel;
-// use entity::nations::Model as NationsModel;
 use migration::{Migrator, MigratorTrait};
 use std::str::FromStr;
 use std::{env, net::SocketAddr};
@@ -39,6 +40,7 @@ async fn start() -> anyhow::Result<()> {
     let state = AppState { conn };
     let app: Router = Router::new()
         .route("/", get(get_all_armies))
+        .route("/nation-profile/:user_id", get(get_nation_and_armies))
         .route("/users", post(create_or_update_user))
         .route("/matchup", get(get_matchup))
         .layer(CorsLayer::permissive())
@@ -102,6 +104,19 @@ async fn create_or_update_user(
         .expect("Could not insert or return user!");
 
     Ok(Json(user))
+}
+
+#[debug_handler]
+async fn get_nation_and_armies(
+    State(state): State<AppState>,
+    Path(user_id): Path<armies_of_avalon_service::sea_orm::prelude::Uuid>,
+) -> Result<Json<(NationsModel, Vec<NationArmiesModel>)>, (StatusCode, &'static str)> {
+    let nation_and_armies = Query::get_nation_with_nation_armies_by_user_id(&state.conn, user_id)
+        .await
+        .expect("A Nation and a vec of nation armies should return!");
+    dbg!(&nation_and_armies);
+
+    Ok(Json(nation_and_armies))
 }
 
 pub fn main() {
