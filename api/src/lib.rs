@@ -109,8 +109,9 @@ async fn create_or_update_user(
 #[debug_handler]
 async fn get_nation_and_armies(
     State(state): State<AppState>,
-    Path(user_id): Path<armies_of_avalon_service::sea_orm::prelude::Uuid>,
+    Path(user_id): Path<i32>,
 ) -> Result<Json<(NationsModel, Vec<NationArmiesModel>)>, (StatusCode, &'static str)> {
+    println!("'LOOOOK, {}", &user_id);
     let nation_and_armies = Query::get_nation_with_nation_armies_by_user_id(&state.conn, user_id)
         .await
         .expect("A Nation and a vec of nation armies should return!");

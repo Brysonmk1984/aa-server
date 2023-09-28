@@ -5,7 +5,6 @@ use ::entity::armies::{self, Entity as Armies, Model};
 use ::entity::nation_armies::{self, Entity as NationArmies, Model as NationArmiesModel};
 use ::entity::nations::{self, Entity as Nations, Model as NationsModel};
 use ::entity::users::{self, Column, Entity as Users, Model as UsersModel};
-use sea_orm::prelude::Uuid;
 use sea_orm::sea_query::OnConflict;
 use sea_orm::*;
 use serde::Deserialize;
@@ -40,7 +39,7 @@ impl Query {
 
     pub async fn get_nation_with_nation_armies_by_user_id(
         db: &DbConn,
-        user_id: Uuid,
+        user_id: i32,
     ) -> Result<(NationsModel, Vec<NationArmiesModel>), DbErr> {
         let nation = Nations::find()
             .filter(nations::Column::UserId.eq(user_id))
