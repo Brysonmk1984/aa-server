@@ -15,6 +15,8 @@ mod m20230923_140246_add_user_table;
 mod m20230923_143157_update_nation_table_user_fk;
 mod m20230924_233249_add_unique_sub_constriant;
 mod m20230924_233539_add_unique_sub_table_constraint;
+mod m20231024_131717_change_shinobi_name;
+mod m20231024_132726_insert_remaining_armies;
 mod utils;
 
 pub struct Migrator;
@@ -39,6 +41,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20230923_143157_update_nation_table_user_fk::Migration),
             Box::new(m20230924_233249_add_unique_sub_constriant::Migration),
             Box::new(m20230924_233539_add_unique_sub_table_constraint::Migration),
+            Box::new(m20231024_131717_change_shinobi_name::Migration),
+            Box::new(m20231024_132726_insert_remaining_armies::Migration),
         ]
     }
 }
