@@ -13,6 +13,7 @@ use entity::nation_armies::Model as NationArmiesModel;
 use entity::nations::Model as NationsModel;
 use entity::users::Model as UsersModel;
 use migration::{Migrator, MigratorTrait};
+use serde::Deserialize;
 use std::str::FromStr;
 use std::{env, net::SocketAddr};
 use tower::ServiceBuilder;
@@ -42,7 +43,7 @@ async fn start() -> anyhow::Result<()> {
         .route("/", get(get_all_armies))
         .route("/nation-profile/:user_id", get(get_nation_and_armies))
         .route("/users", post(create_or_update_user))
-        .route("/matchup", get(get_matchup))
+        .route("/matchup", post(post_matchup))
         .layer(CorsLayer::permissive())
         .with_state(state);
 
@@ -67,19 +68,29 @@ async fn get_all_armies(
     Ok(Json(armies))
 }
 
+#[derive(Deserialize, Debug)]
+pub struct Battle_Competitors {
+    pub east_competitor: i32,
+    pub west_competitor: i32,
+}
+
 #[debug_handler]
-async fn get_matchup(
+async fn post_matchup(
     state: State<AppState>,
+    Json(body): Json<Battle_Competitors>,
 ) -> Result<
     Json<Vec<(entity::nations::Model, Vec<entity::nation_armies::Model>)>>,
     (StatusCode, &'static str),
 > {
-    let mut nation_and_nation_armies_one = Query::get_nation_with_nation_armies(&state.conn, 1)
-        .await
-        .expect("Cannot get nation with armies!");
-    let mut nation_and_nation_armies_two = Query::get_nation_with_nation_armies(&state.conn, 2)
-        .await
-        .expect("Cannot get nation with armies!");
+    println!("{:?}", body);
+    let mut nation_and_nation_armies_one =
+        Query::get_nation_with_nation_armies(&state.conn, body.east_competitor)
+            .await
+            .expect("Cannot get nation with armies!");
+    let mut nation_and_nation_armies_two =
+        Query::get_nation_with_nation_armies(&state.conn, body.west_competitor)
+            .await
+            .expect("Cannot get nation with armies!");
 
     println!("{nation_and_nation_armies_one:?} {nation_and_nation_armies_two:?}");
     nation_and_nation_armies_one.append(&mut nation_and_nation_armies_two);
@@ -92,7 +103,6 @@ async fn create_or_update_user(
     State(state): State<AppState>,
     Json(body): Json<Auth0UserPart>,
 ) -> Result<Json<UsersModel>, (StatusCode, &'static str)> {
-    println!("{body:?}");
     let partial_user = Auth0UserPart {
         email: body.email.to_string(),
         email_verified: body.email_verified,
@@ -111,7 +121,6 @@ async fn get_nation_and_armies(
     State(state): State<AppState>,
     Path(user_id): Path<i32>,
 ) -> Result<Json<(NationsModel, Vec<NationArmiesModel>)>, (StatusCode, &'static str)> {
-    println!("'LOOOOK, {}", &user_id);
     let nation_and_armies = Query::get_nation_with_nation_armies_by_user_id(&state.conn, user_id)
         .await
         .expect("A Nation and a vec of nation armies should return!");

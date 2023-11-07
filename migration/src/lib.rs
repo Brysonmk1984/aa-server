@@ -18,6 +18,8 @@ mod m20230924_233539_add_unique_sub_table_constraint;
 mod m20231024_131717_change_shinobi_name;
 mod m20231024_132726_insert_remaining_armies;
 mod m20231025_135151_update_old_armies_with_defaults;
+mod m20231107_133838_insert_initial_nations;
+mod m20231107_134927_insert_initial_nation_armies;
 mod utils;
 
 pub struct Migrator;
@@ -45,6 +47,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20231024_131717_change_shinobi_name::Migration),
             Box::new(m20231024_132726_insert_remaining_armies::Migration),
             Box::new(m20231025_135151_update_old_armies_with_defaults::Migration),
+            Box::new(m20231107_133838_insert_initial_nations::Migration),
+            Box::new(m20231107_134927_insert_initial_nation_armies::Migration),
         ]
     }
 }

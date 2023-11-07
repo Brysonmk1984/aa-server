@@ -11,7 +11,7 @@ impl MigrationTrait for Migration {
         let sql = "
             INSERT INTO armies VALUES 
                 (DEFAULT, 'Peacekeeper Monks', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
-                (DEFAULT, 'Imperial Legionnaire', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
+                (DEFAULT, 'Imperial Legionnaires', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
                 (DEFAULT, 'North Watch Longbowmen', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
                 (DEFAULT, 'Highborn Cavalry', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
 
@@ -31,7 +31,7 @@ impl MigrationTrait for Migration {
         let sql = "
             DELETE FROM armies 
                 WHERE name='Peacekeeper Monks'
-                OR name='Imperial Legionnaire'
+                OR name='Imperial Legionnaires'
                 OR name='North Watch Longbowmen'
                 OR name='Highborn Cavalry'
                 OR name='Rōnin Immortals' 
