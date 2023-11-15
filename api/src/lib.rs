@@ -44,7 +44,7 @@ async fn start() -> anyhow::Result<()> {
         .route("/nation-profile/:user_id", get(get_nation_and_armies))
         .route("/users", post(create_or_update_user))
         .route("/matchup", post(post_matchup))
-        .route("/armies/buy", get(buy_army))
+        .route("/nation/:nation_id/army/:army_id", post(buy_army))
         .layer(CorsLayer::permissive())
         .with_state(state);
 
@@ -131,7 +131,9 @@ async fn get_nation_and_armies(
 }
 
 // #[debug_handler]
-// async fn buy_army() {}
+async fn buy_army(State(state): State<AppState>, Path((nation_id, army_id)): Path<(i32, i32)>) {
+    println!("{nation_id} {army_id}");
+}
 
 pub fn main() {
     let result = start();
