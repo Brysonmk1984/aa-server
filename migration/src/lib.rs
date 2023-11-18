@@ -21,6 +21,7 @@ mod m20231025_135151_update_old_armies_with_defaults;
 mod m20231107_133838_insert_initial_nations;
 mod m20231107_134927_insert_initial_nation_armies;
 mod m20231114_145034_add_gold_column;
+mod m20231118_182739_add_gold_to_nation;
 mod utils;
 
 pub struct Migrator;
@@ -51,6 +52,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20231107_133838_insert_initial_nations::Migration),
             Box::new(m20231107_134927_insert_initial_nation_armies::Migration),
             Box::new(m20231114_145034_add_gold_column::Migration),
+            Box::new(m20231118_182739_add_gold_to_nation::Migration),
         ]
     }
 }
