@@ -9,7 +9,7 @@ use std::{env, net::SocketAddr};
 use tower_http::cors::CorsLayer;
 
 use crate::routes::{
-    armies::armies_routes, battles::battles_routes, nation::nation_routes, users::users_routes,
+    armies::armies_routes, battles::battles_routes, kingdom::kingdom_routes, users::users_routes,
 };
 
 #[derive(Clone, Debug)]
@@ -34,7 +34,7 @@ async fn start() -> anyhow::Result<()> {
         .nest("/battles", battles_routes(&state))
         .nest("/users", users_routes(&state))
         .nest("/armies", armies_routes(&state))
-        .nest("/nation", nation_routes(&state))
+        .nest("/kingdom", kingdom_routes(&state))
         .layer(CorsLayer::permissive())
         .with_state(state);
 
