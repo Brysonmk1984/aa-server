@@ -1,7 +1,7 @@
 #![allow(warnings)]
 
-mod controller;
-
+mod handlers;
+mod routes;
 use armies_of_avalon_service::sea_orm::{Database, DatabaseConnection};
 use armies_of_avalon_service::{Auth0UserPart, Mutation, Query};
 use axum::body::{self, Body};
@@ -10,7 +10,7 @@ use axum::http::{HeaderName, Method, Request};
 use axum::routing::{post, put};
 use axum::{extract::State, http::StatusCode, routing::get, Json, Router, Server};
 use axum_macros::debug_handler;
-use controller::nation::buy_army;
+
 use entity::armies::Model as ArmiesModel;
 use entity::nation_armies::Model as NationArmiesModel;
 use entity::nations::Model as NationsModel;
@@ -21,8 +21,6 @@ use std::str::FromStr;
 use std::{env, net::SocketAddr};
 use tower::ServiceBuilder;
 use tower_http::cors::{Any, CorsLayer};
-
-use crate::controller::nation::NationController;
 
 //pub const ACCESS_CONTROL_ALLOW_METHODS: HeaderName::from_static("Content-Type");
 
@@ -49,10 +47,7 @@ async fn start() -> anyhow::Result<()> {
         .route("/nation-profile/:user_id", get(get_nation_and_armies))
         .route("/users", post(create_or_update_user))
         .route("/matchup", post(post_matchup))
-        .route(
-            "/nation/:nation_id/army/:army_id",
-            post(NationController::buy_army),
-        )
+        .nest("/nation", routes::nation::nation_routes(&state))
         .layer(CorsLayer::permissive())
         .with_state(state);
 

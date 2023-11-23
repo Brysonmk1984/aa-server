@@ -101,4 +101,88 @@ impl Mutation {
             }
         }
     }
+
+    pub async fn buy_army(db: &DbConn, nation_id: i32, army_id: i32) -> Result<(), DbErr> {
+        let nation_option: Option<nations::Model> = Nations::find_by_id(nation_id).one(db).await?;
+        let army_option: Option<armies::Model> = Armies::find_by_id(army_id).one(db).await?;
+        let army_cost;
+        let nation_gold;
+
+        if let Some(army) = &army_option {
+            army_cost = army.cost;
+        } else {
+            let error_message = format!("army_id: {army_id}");
+            //return DbErr::RecordNotFound(error_message);
+            return Err(DbErr::Custom(error_message));
+        }
+
+        if let Some(nation) = &nation_option {
+            nation_gold = nation.gold;
+        } else {
+            let error_message = format!("nation_id: {nation_id}");
+            //return Err(DbErr::RecordNotFound(error_message));
+            return Err(DbErr::Custom(error_message));
+        }
+
+        if (army_cost > nation_gold) {
+            let error_message = format!("Nation does not have enough Gold!");
+            return Err(DbErr::Custom(error_message));
+        } else {
+            // Now we create a transaction that:
+            // first subtracts the gold from the nation
+            // second creates the nation_army
+
+            // <Fn, A, B> -> Result<A, B>
+            // let transaction_result = db
+            //     .transaction::<_, (), DbErr>(|txn| {
+            //         Box::pin(async move {
+            //             nations::ActiveModel {
+            //                 gold: Set(nation_gold - army_cost),
+            //                 ..Default::default()
+            //             }
+            //             .save(txn)
+            //             .await?;
+
+            //             let matching_army = army_option.unwrap();
+
+            //             let nation_army_to_be_inserted = nation_armies::ActiveModel {
+            //                 nation_id: Set(nation_id),
+            //                 army_id: Set(army_id),
+            //                 count: Set(matching_army.count),
+            //                 army_name: Set(matching_army.name),
+            //                 ..Default::default()
+            //             };
+
+            //             nation_army_to_be_inserted.insert(db).await?;
+
+            //             Ok(())
+            //         })
+            //     })
+            //     .await;
+
+            // match transaction_result {
+            //     Ok(_) => Ok(()),
+
+            //     Err(error) => Err(anyhow!(error)),
+            // }
+
+            let mut nation_to_be_updated: nations::ActiveModel = nation_option.unwrap().into();
+            nation_to_be_updated.gold = Set(nation_gold - army_cost);
+            let pear: nations::Model = nation_to_be_updated.update(db).await?;
+
+            let matching_army = army_option.unwrap();
+
+            let nation_army_to_be_inserted = nation_armies::ActiveModel {
+                nation_id: Set(nation_id),
+                army_id: Set(army_id),
+                count: Set(matching_army.count),
+                army_name: Set(matching_army.name),
+                ..Default::default()
+            };
+
+            nation_army_to_be_inserted.insert(db).await?;
+
+            Ok(())
+        }
+    }
 }
