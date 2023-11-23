@@ -102,7 +102,11 @@ impl Mutation {
         }
     }
 
-    pub async fn buy_army(db: &DbConn, nation_id: i32, army_id: i32) -> Result<(), DbErr> {
+    pub async fn buy_army(
+        db: &DbConn,
+        nation_id: i32,
+        army_id: i32,
+    ) -> Result<nation_armies::Model, DbErr> {
         let nation_option: Option<nations::Model> = Nations::find_by_id(nation_id).one(db).await?;
         let army_option: Option<armies::Model> = Armies::find_by_id(army_id).one(db).await?;
         let army_cost;
@@ -180,9 +184,9 @@ impl Mutation {
                 ..Default::default()
             };
 
-            nation_army_to_be_inserted.insert(db).await?;
+            let result = nation_army_to_be_inserted.insert(db).await?;
 
-            Ok(())
+            Ok(result)
         }
     }
 }
