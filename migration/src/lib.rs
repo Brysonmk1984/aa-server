@@ -24,7 +24,10 @@ mod m20231114_145034_add_gold_column;
 mod m20231118_182739_add_gold_to_nation;
 mod m20231124_144641_add_battles_table;
 mod m20231125_175020_add_is_npc;
-mod m20231125_180001_add_campaign_level;
+mod m20231125_213302_add_unique_nation_name_constraint;
+mod m20231125_214149_add_campaign_levels_table;
+mod m20231125_223357_add_nation_campaign_levels_table;
+mod m20231125_225246_add_nation_campaign_level_to_battles_table;
 mod utils;
 
 pub struct Migrator;
@@ -58,7 +61,10 @@ impl MigratorTrait for Migrator {
             Box::new(m20231118_182739_add_gold_to_nation::Migration),
             Box::new(m20231124_144641_add_battles_table::Migration),
             Box::new(m20231125_175020_add_is_npc::Migration),
-            Box::new(m20231125_180001_add_campaign_level::Migration),
+            Box::new(m20231125_213302_add_unique_nation_name_constraint::Migration),
+            Box::new(m20231125_214149_add_campaign_levels_table::Migration),
+            Box::new(m20231125_223357_add_nation_campaign_levels_table::Migration),
+            Box::new(m20231125_225246_add_nation_campaign_level_to_battles_table::Migration),
         ]
     }
 }

@@ -8,18 +8,21 @@ pub struct Migration;
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
-            CREATE TABLE battles (
+            CREATE TABLE campaign_levels (
                 id SERIAL PRIMARY KEY, 
-                nation_id_east INT NOT NULL, 
-                nation_id_west INT NOT NULL, 
-                nation_campaign_level_id INT,
-                CONSTRAINT fk_east_id
-                    FOREIGN KEY(nation_id_east)
+                nation_id INT NOT NULL, 
+                nation_name VARCHAR(50) NOT NULL, 
+                level  INT NOT NULL UNIQUE,
+               
+
+                CONSTRAINT fk_nation_id
+                    FOREIGN KEY(nation_id)
                         REFERENCES nations(id),
 
-                CONSTRAINT fk_west_id
-                    FOREIGN KEY(nation_id_west)
-                        REFERENCES nations(id)
+                CONSTRAINT fk_nation_name
+                    FOREIGN KEY(nation_name)
+                        REFERENCES nations(name)
+
             );
         ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
@@ -28,7 +31,7 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
-            DROP TABLE battles;
+            DROP TABLE campaign_levels;
         ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
         raw_sql_migration(manager, statement).await
