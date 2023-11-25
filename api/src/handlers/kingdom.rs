@@ -18,7 +18,6 @@ pub async fn get_nation_and_armies(
         .await
         .expect("A Nation and a vec of nation armies should return!");
     dbg!(&nation_and_armies);
-
     Ok(Json(nation_and_armies))
 }
 

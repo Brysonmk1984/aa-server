@@ -28,12 +28,12 @@ impl Query {
     pub async fn get_nation_with_nation_armies(
         db: &DbConn,
         id: i32,
-    ) -> Result<Vec<(NationsModel, Vec<NationArmiesModel>)>, DbErr> {
+    ) -> Result<(NationsModel, Vec<NationArmiesModel>), DbErr> {
         let result = Nations::find_by_id(id)
             .find_with_related(NationArmies)
             .all(db)
             .await?;
-
+        let result: (NationsModel, Vec<NationArmiesModel>) = result.get(0).unwrap().clone();
         Ok(result)
     }
 

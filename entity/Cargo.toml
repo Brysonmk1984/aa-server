@@ -10,6 +10,9 @@ path = "src/lib.rs"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
+aa-battles = {path = "../../aa-battles"}
+num-traits = "0.2.17"
+rust_decimal_macros = "1.33.1"
 
 [dependencies.sea-orm]
 version = "0.12.0-rc.3" # sea-orm version

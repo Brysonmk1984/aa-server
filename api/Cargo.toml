@@ -20,3 +20,4 @@ tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
 entity = { path = "../entity" }
 migration = { path = "../migration" }
 axum-macros = "0.3.8"
+aa-battles = {path = "../../aa-battles"}

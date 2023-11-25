@@ -3,6 +3,8 @@
 use sea_orm::entity::prelude::*;
 use serde::Serialize;
 
+use aa_battles::types::{Army, Nation, NationArmy};
+
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize)]
 #[sea_orm(table_name = "nations")]
 pub struct Model {
@@ -11,6 +13,17 @@ pub struct Model {
     pub user_id: Option<i32>,
     pub name: String,
     pub gold: i32,
+}
+
+impl Into<Nation> for Model {
+    fn into(self) -> Nation {
+        Nation {
+            id: self.id,
+            user_id: self.user_id.unwrap(),
+            name: self.name,
+            gold: self.gold,
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -1,3 +1,5 @@
+extern crate aa_battles;
+
 mod handlers;
 mod routes;
 
