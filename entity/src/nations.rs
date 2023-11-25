@@ -13,6 +13,7 @@ pub struct Model {
     pub user_id: Option<i32>,
     pub name: String,
     pub gold: i32,
+    pub is_npc: bool,
 }
 
 impl Into<Nation> for Model {
@@ -22,6 +23,7 @@ impl Into<Nation> for Model {
             user_id: self.user_id.unwrap(),
             name: self.name,
             gold: self.gold,
+            is_npc: self.is_npc,
         }
     }
 }

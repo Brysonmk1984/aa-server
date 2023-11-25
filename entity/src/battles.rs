@@ -2,13 +2,15 @@
 
 use sea_orm::entity::prelude::*;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Default)]
 #[sea_orm(table_name = "battles")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub nation_id_east: i32,
     pub nation_id_west: i32,
+    #[sea_orm(nullable)]
+    pub campaign_level: Option<i32>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

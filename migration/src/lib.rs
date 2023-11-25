@@ -23,6 +23,8 @@ mod m20231107_134927_insert_initial_nation_armies;
 mod m20231114_145034_add_gold_column;
 mod m20231118_182739_add_gold_to_nation;
 mod m20231124_144641_add_battles_table;
+mod m20231125_175020_add_is_npc;
+mod m20231125_180001_add_campaign_level;
 mod utils;
 
 pub struct Migrator;
@@ -55,6 +57,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20231114_145034_add_gold_column::Migration),
             Box::new(m20231118_182739_add_gold_to_nation::Migration),
             Box::new(m20231124_144641_add_battles_table::Migration),
+            Box::new(m20231125_175020_add_is_npc::Migration),
+            Box::new(m20231125_180001_add_campaign_level::Migration),
         ]
     }
 }

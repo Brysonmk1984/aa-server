@@ -42,7 +42,7 @@ pub async fn run_battle(
             .expect("Cannot get nation with armies!");
 
     let east_tuple: (Nation, Vec<NationArmy>) = (
-        east_nation.into(),
+        east_nation.clone().into(),
         east_nation_armies
             .iter()
             .map(|army| army.clone().into())
@@ -55,7 +55,7 @@ pub async fn run_battle(
             .expect("Cannot get nation with armies!");
 
     let west_tuple: (Nation, Vec<NationArmy>) = (
-        west_nation.into(),
+        west_nation.clone().into(),
         west_nation_armies
             .iter()
             .map(|army| army.clone().into())
@@ -69,6 +69,13 @@ pub async fn run_battle(
     println!("{:?}", result);
 
     //nation_and_nation_armies_one.append(&mut nation_and_nation_armies_two);
+
+    let battle_result = entity::battles::Model {
+        nation_id_east: east_nation.id,
+        nation_id_west: west_nation.id,
+        campaign_level: None,
+        ..Default::default()
+    };
 
     Ok(())
 }
