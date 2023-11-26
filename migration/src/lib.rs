@@ -28,6 +28,8 @@ mod m20231125_213302_add_unique_nation_name_constraint;
 mod m20231125_214149_add_campaign_levels_table;
 mod m20231125_223357_add_nation_campaign_levels_table;
 mod m20231125_225246_add_nation_campaign_level_to_battles_table;
+mod m20231126_144923_add_campaign_nations;
+mod m20231126_195724_add_campaign_armies;
 mod utils;
 
 pub struct Migrator;
@@ -65,6 +67,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20231125_214149_add_campaign_levels_table::Migration),
             Box::new(m20231125_223357_add_nation_campaign_levels_table::Migration),
             Box::new(m20231125_225246_add_nation_campaign_level_to_battles_table::Migration),
+            Box::new(m20231126_144923_add_campaign_nations::Migration),
+            Box::new(m20231126_195724_add_campaign_armies::Migration),
         ]
     }
 }
