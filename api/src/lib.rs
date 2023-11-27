@@ -10,6 +10,7 @@ use std::str::FromStr;
 use std::{env, net::SocketAddr};
 use tower_http::cors::CorsLayer;
 
+use crate::routes::campaign::campaign_routes;
 use crate::routes::{
     armies::armies_routes, battles::battles_routes, kingdom::kingdom_routes, users::users_routes,
 };
@@ -37,6 +38,7 @@ async fn start() -> anyhow::Result<()> {
         .nest("/users", users_routes(&state))
         .nest("/armies", armies_routes(&state))
         .nest("/kingdom", kingdom_routes(&state))
+        .nest("/campaign", campaign_routes(&state))
         .layer(CorsLayer::permissive())
         .with_state(state);
 

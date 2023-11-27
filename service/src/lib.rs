@@ -37,6 +37,10 @@ impl Query {
         Ok(result)
     }
 
+    pub fn get_all_nations() {
+        todo!("Should get all nations, optionally filtering by query params");
+    }
+
     pub async fn get_nation_with_nation_armies_by_user_id(
         db: &DbConn,
         user_id: i32,
@@ -53,6 +57,30 @@ impl Query {
         let nation_id = &nation.clone().unwrap().id;
         let nation_armies = NationArmies::find()
             .filter(nation_armies::Column::NationId.eq(*nation_id))
+            .all(db)
+            .await;
+
+        match nation_armies {
+            Ok(n_armies) => Ok((nation.unwrap(), n_armies)),
+            Err(_) => Ok((nation.unwrap(), vec![])),
+        }
+    }
+
+    pub async fn get_nation_with_nation_armies_by_nation_id(
+        db: &DbConn,
+        nation_id: i32,
+    ) -> Result<(NationsModel, Vec<NationArmiesModel>), DbErr> {
+        let nation = Nations::find()
+            .filter(nations::Column::Id.eq(nation_id))
+            .one(db)
+            .await?;
+
+        if nation.is_none() {
+            panic!("No nation with id: {}", nation_id)
+        }
+
+        let nation_armies = NationArmies::find()
+            .filter(nation_armies::Column::NationId.eq(nation_id))
             .all(db)
             .await;
 

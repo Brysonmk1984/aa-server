@@ -10,7 +10,7 @@ use entity::{nation_armies::Model as NationArmiesModel, nations::Model as Nation
 use crate::AppState;
 
 #[debug_handler]
-pub async fn get_nation_and_armies(
+pub async fn get_nation_and_armies_by_user_id(
     State(state): State<AppState>,
     Path(user_id): Path<i32>,
 ) -> Result<Json<(NationsModel, Vec<NationArmiesModel>)>, (StatusCode, &'static str)> {
