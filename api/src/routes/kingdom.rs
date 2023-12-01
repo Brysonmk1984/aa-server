@@ -1,11 +1,10 @@
-use axum::{
-    routing::{get, post},
-    Router,
-};
-
 use crate::{
     handlers::kingdom::{buy_army, get_nation_and_armies_by_user_id},
     AppState,
+};
+use axum::{
+    routing::{get, post},
+    Router,
 };
 
 pub fn kingdom_routes(state: &AppState) -> Router<AppState> {

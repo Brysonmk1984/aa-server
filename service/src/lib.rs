@@ -1,4 +1,7 @@
 #![allow(warnings)]
+
+use std::fmt;
+
 pub use sea_orm;
 
 use ::entity::armies::{self, Entity as Armies, Model};
@@ -8,8 +11,13 @@ use ::entity::users::{self, Column, Entity as Users, Model as UsersModel};
 use sea_orm::sea_query::OnConflict;
 use sea_orm::*;
 use serde::Deserialize;
-
+use strum::EnumString;
 pub struct Query;
+
+#[derive(Deserialize)]
+pub struct GetAllNationsParams {
+    pub is_npc: Option<bool>,
+}
 
 impl Query {
     pub async fn find_army_by_id(
@@ -37,8 +45,25 @@ impl Query {
         Ok(result)
     }
 
-    pub fn get_all_nations() {
-        todo!("Should get all nations, optionally filtering by query params");
+    pub async fn get_all_nations(
+        db: &DbConn,
+        params: GetAllNationsParams,
+    ) -> Result<Vec<NationsModel>, DbErr> {
+        let result;
+
+        match params.is_npc {
+            Some(is_npc) => {
+                result = Nations::find()
+                    .filter(nations::Column::IsNpc.eq(is_npc))
+                    .all(db)
+                    .await?;
+            }
+            None => {
+                result = Nations::find().all(db).await?;
+            }
+        }
+
+        Ok(result)
     }
 
     pub async fn get_nation_with_nation_armies_by_user_id(
