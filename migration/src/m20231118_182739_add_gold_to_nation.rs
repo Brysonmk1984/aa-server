@@ -8,7 +8,7 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        let sql = "ALTER TABLE nations ADD COLUMN gold INT DEFAULT 0";
+        let sql = "ALTER TABLE nations ADD COLUMN gold INT NOT NULL DEFAULT 0";
 
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
         raw_sql_migration(manager, statement).await
