@@ -73,7 +73,7 @@ pub async fn run_battle(
     let battle_result = entity::battles::Model {
         nation_id_east: east_nation.id,
         nation_id_west: west_nation.id,
-        campaign_level: None,
+        nation_campaign_level_id: None,
         ..Default::default()
     };
 

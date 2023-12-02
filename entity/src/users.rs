@@ -7,8 +7,8 @@ use serde::Serialize;
 #[sea_orm(table_name = "users")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    #[serde(skip_deserializing)]
     pub id: i32,
+    #[sea_orm(unique)]
     pub auth0_sub: String,
     pub email: String,
     pub email_verified: bool,

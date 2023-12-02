@@ -4,18 +4,37 @@ use sea_orm::entity::prelude::*;
 use serde::Serialize;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize)]
-#[sea_orm(table_name = "campaign_levels")]
+#[sea_orm(table_name = "nation_campaign_levels")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub nation_id: i32,
+    pub campaign_level_id: i32,
     pub nation_name: String,
-    #[sea_orm(unique)]
     pub level: i32,
+    pub attempts: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::battles::Entity")]
+    Battles,
+    #[sea_orm(
+        belongs_to = "super::campaign_levels::Entity",
+        from = "Column::CampaignLevelId",
+        to = "super::campaign_levels::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    CampaignLevels2,
+    #[sea_orm(
+        belongs_to = "super::campaign_levels::Entity",
+        from = "Column::Level",
+        to = "super::campaign_levels::Column::Level",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    CampaignLevels1,
     #[sea_orm(
         belongs_to = "super::nations::Entity",
         from = "Column::NationId",
@@ -32,6 +51,12 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Nations1,
+}
+
+impl Related<super::battles::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Battles.def()
+    }
 }
 
 impl ActiveModelBehavior for ActiveModel {}

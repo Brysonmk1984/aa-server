@@ -2,6 +2,8 @@
 
 pub use super::armies::Entity as Armies;
 pub use super::battles::Entity as Battles;
+pub use super::campaign_levels::Entity as CampaignLevels;
 pub use super::nation_armies::Entity as NationArmies;
+pub use super::nation_campaign_levels::Entity as NationCampaignLevels;
 pub use super::nations::Entity as Nations;
 pub use super::users::Entity as Users;
