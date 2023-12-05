@@ -5,6 +5,7 @@ use std::fmt;
 pub use sea_orm;
 
 use ::entity::armies::{self, Entity as Armies, Model};
+use ::entity::campaign_levels::{self, Entity as CampaignLevels, Model as CampaignLevelsModel};
 use ::entity::nation_armies::{self, Entity as NationArmies, Model as NationArmiesModel};
 use ::entity::nations::{self, Entity as Nations, Model as NationsModel};
 use ::entity::users::{self, Column, Entity as Users, Model as UsersModel};
@@ -93,26 +94,40 @@ impl Query {
 
     pub async fn get_nation_with_nation_armies_by_nation_id(
         db: &DbConn,
-        nation_id: i32,
+        level: i32,
     ) -> Result<(NationsModel, Vec<NationArmiesModel>), DbErr> {
-        let nation = Nations::find()
-            .filter(nations::Column::Id.eq(nation_id))
+        println!("{level}");
+        let campaign_level = CampaignLevels::find()
+            .filter(campaign_levels::Column::Level.eq(level))
             .one(db)
             .await?;
-
+        if campaign_level.is_none() {
+            panic!("No campaign level: {}", level)
+        }
+        let level_nation_id = campaign_level.unwrap().nation_id.clone();
+        let nation = Nations::find()
+            .filter(nations::Column::Id.eq(level_nation_id))
+            .one(db)
+            .await?;
+        println!("{nation:?}");
         if nation.is_none() {
-            panic!("No nation with id: {}", nation_id)
+            panic!("No nation with id: {}", level_nation_id)
         }
 
         let nation_armies = NationArmies::find()
-            .filter(nation_armies::Column::NationId.eq(nation_id))
+            .filter(nation_armies::Column::NationId.eq(level_nation_id))
             .all(db)
             .await;
-
+        println!("{nation_armies:?}");
         match nation_armies {
             Ok(n_armies) => Ok((nation.unwrap(), n_armies)),
             Err(_) => Ok((nation.unwrap(), vec![])),
         }
+    }
+
+    pub async fn get_all_campaign_levels(db: &DbConn) -> Result<Vec<CampaignLevelsModel>, DbErr> {
+        let campaign_levels: Vec<CampaignLevelsModel> = CampaignLevels::find().all(db).await?;
+        Ok(campaign_levels)
     }
 }
 

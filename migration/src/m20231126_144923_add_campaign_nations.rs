@@ -52,9 +52,8 @@ impl MigrationTrait for Migration {
             DELETE FROM nations 
                 WHERE name='The Fretful Ones'
                 OR name='Garden Pacifists'
-                OR name='Garden Pacifists'
-                OR name='People of the Plains'
-                OR name='Badlands Marauders'
+                OR name='Badlands Guild'
+                OR name='Wayward Marauders'
                 OR name='Dire Canyon'
                 OR name='Merchants of the Narrows'
                 OR name='Alpha Union'

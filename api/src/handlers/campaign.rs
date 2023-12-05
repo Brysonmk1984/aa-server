@@ -5,7 +5,10 @@ use axum::{
     Json,
 };
 use axum_macros::debug_handler;
-use entity::{nation_armies::Model as NationArmiesModel, nations::Model as NationsModel};
+use entity::{
+    campaign_levels::Model as CampaignLevelsModel, nation_armies::Model as NationArmiesModel,
+    nations::Model as NationsModel,
+};
 
 use crate::AppState;
 
@@ -27,10 +30,23 @@ pub async fn get_all_campaign_nations_details(
 }
 
 #[debug_handler]
+pub async fn get_all_campaign_levels(
+    State(state): State<AppState>,
+) -> Result<Json<Vec<CampaignLevelsModel>>, (StatusCode, &'static str)> {
+    let mut campaign_levels: Vec<CampaignLevelsModel> =
+        armies_of_avalon_service::Query::get_all_campaign_levels(&state.conn)
+            .await
+            .expect("A vec of campaign levels should be returned");
+    campaign_levels.sort_by_key(|campaign_level| campaign_level.level);
+    return Ok(Json(campaign_levels));
+}
+
+#[debug_handler]
 pub async fn get_campaign_nation_details(
     State(state): State<AppState>,
     Path(nation_id): Path<i32>,
 ) -> Result<Json<(NationsModel, Vec<NationArmiesModel>)>, (StatusCode, &'static str)> {
+    println!("test {nation_id} asd");
     let nation_and_armies =
         armies_of_avalon_service::Query::get_nation_with_nation_armies_by_nation_id(
             &state.conn,
