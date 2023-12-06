@@ -10,12 +10,12 @@ impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
             INSERT INTO armies VALUES 
-                (DEFAULT, 'Barbarians of the Outer Steppe', 'TBD', 1000, 0.00, FALSE, 5, 0.90, 'crushing', 'chain', 0.25, 10, 0.00, 1.00, 1),
-                (DEFAULT, 'Oath-Sworn Knights', 'TBD', 1000, 0.50, FALSE, 5, 1.00,  'edged', 'plate', 0.25, 5, 0.00, 1.00, 1),
-                (DEFAULT, 'Minute Men Militia', 'TBD', 1000, 0.00, FALSE, 5, 0.75, 'edged', 'unarmored', 0.25, 5, 0.00, 1.00, 1),
-                (DEFAULT, 'Death Dealer Assassins', 'TBD', 500, 0.00, FALSE, 5, 1.00, 'edged', 'unarmored', 0.35, 10, 0.00, 3.00, 2),
-                (DEFAULT, 'Elven Archers', 'TBD', 500, 0.00, FALSE, 750, 0.90,  'piercing', 'leather', 0.25, 10, 0.00, 2.00, 2),
-                (DEFAULT, 'Castlegate Crossbowmen', 'TBD', 1000, 0.00, FALSE, 500, 0.75, 'piercing', 'chain', 0.15, 5, 0.00, 1.00, 2)
+                (DEFAULT, 'Barbarians of the Outer Steppe', 'TBD', 100, 0.00, FALSE, 5, 0.90, 'crushing', 'chain', 0.25, 10, 0.00, 1.00, 1),
+                (DEFAULT, 'Oath-Sworn Knights', 'TBD', 100, 0.50, FALSE, 5, 1.00,  'edged', 'plate', 0.25, 5, 0.00, 1.00, 1),
+                (DEFAULT, 'Minute Men Militia', 'TBD', 100, 0.00, FALSE, 5, 0.75, 'edged', 'unarmored', 0.25, 5, 0.00, 1.00, 1),
+                (DEFAULT, 'Death Dealer Assassins', 'TBD', 100, 0.00, FALSE, 5, 1.00, 'edged', 'unarmored', 0.35, 10, 0.00, 3.00, 2),
+                (DEFAULT, 'Elven Archers', 'TBD', 100, 0.00, FALSE, 750, 0.90,  'piercing', 'leather', 0.25, 10, 0.00, 2.00, 2),
+                (DEFAULT, 'Castlegate Crossbowmen', 'TBD', 100, 0.00, FALSE, 500, 0.75, 'piercing', 'chain', 0.15, 5, 0.00, 1.00, 2)
             ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
         raw_sql_migration(manager, statement).await
