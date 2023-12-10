@@ -9,6 +9,7 @@ use entity::{
     campaign_levels::Model as CampaignLevelsModel, nation_armies::Model as NationArmiesModel,
     nations::Model as NationsModel,
 };
+use serde::Serialize;
 
 use crate::AppState;
 
@@ -41,19 +42,29 @@ pub async fn get_all_campaign_levels(
     return Ok(Json(campaign_levels));
 }
 
+#[derive(Serialize)]
+pub struct NationWithArmies {
+    nation_details: NationsModel,
+    all_armies: Vec<NationArmiesModel>,
+}
+
 #[debug_handler]
 pub async fn get_campaign_nation_details(
     State(state): State<AppState>,
     Path(nation_id): Path<i32>,
-) -> Result<Json<(NationsModel, Vec<NationArmiesModel>)>, (StatusCode, &'static str)> {
+) -> Result<Json<NationWithArmies>, (StatusCode, &'static str)> {
     println!("test {nation_id} asd");
-    let nation_and_armies =
+    let (nation_details, all_armies) =
         armies_of_avalon_service::Query::get_nation_with_nation_armies_by_nation_id(
             &state.conn,
             nation_id,
         )
         .await
         .expect("A Nation and a vec of nation armies should return when fetching by nation id!");
-    dbg!(&nation_and_armies);
-    Ok(Json(nation_and_armies))
+
+    let combined_nation_armies = NationWithArmies {
+        nation_details,
+        all_armies,
+    };
+    Ok(Json(combined_nation_armies))
 }
