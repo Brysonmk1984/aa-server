@@ -15,6 +15,8 @@ use serde::Deserialize;
 use strum::EnumString;
 pub struct Query;
 
+pub mod external_requests;
+
 #[derive(Deserialize)]
 pub struct GetAllNationsParams {
     pub is_npc: Option<bool>,
