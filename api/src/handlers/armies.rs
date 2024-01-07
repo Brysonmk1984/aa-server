@@ -1,6 +1,6 @@
 use armies_of_avalon_service::Query;
-use axum::{extract::State, http::StatusCode, Json};
-use axum_macros::debug_handler;
+use axum::{debug_handler, extract::State, http::StatusCode, Json};
+
 use entity::armies::Model as ArmiesModel;
 
 use crate::AppState;

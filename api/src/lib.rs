@@ -4,10 +4,11 @@ mod handlers;
 mod routes;
 
 use armies_of_avalon_service::sea_orm::{Database, DatabaseConnection};
-use axum::{Router, Server};
+use axum::{serve, Router};
 use migration::{Migrator, MigratorTrait};
 use std::str::FromStr;
 use std::{env, net::SocketAddr};
+use tokio::net::TcpListener;
 use tower_http::cors::CorsLayer;
 
 use crate::routes::campaign::campaign_routes;
@@ -46,9 +47,9 @@ async fn start() -> anyhow::Result<()> {
     let port = env::var("PORT").expect("PORT is not set in .env file");
     let server_url = format!("{host}:{port}");
     println!("{}", server_url);
-    let addr = SocketAddr::from_str(&server_url).unwrap();
+    let listener = TcpListener::bind(server_url).await.unwrap();
 
-    Server::bind(&addr).serve(app.into_make_service()).await?;
+    serve(listener, app.into_make_service()).await?;
 
     Ok(())
 }

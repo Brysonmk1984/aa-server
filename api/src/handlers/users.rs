@@ -1,7 +1,6 @@
 use crate::AppState;
 use armies_of_avalon_service::{Auth0UserPart, Mutation};
-use axum::{extract::State, http::StatusCode, Json};
-use axum_macros::debug_handler;
+use axum::{debug_handler, extract::State, http::StatusCode, Json};
 use entity::users::Model as UsersModel;
 
 #[debug_handler]

@@ -1,10 +1,11 @@
 use armies_of_avalon_service::{Mutation, Query};
 use axum::{
+    debug_handler,
     extract::{Path, State},
     http::StatusCode,
     Json,
 };
-use axum_macros::debug_handler;
+
 use entity::{nation_armies::Model as NationArmiesModel, nations::Model as NationsModel};
 
 use crate::AppState;

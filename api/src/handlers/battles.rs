@@ -1,9 +1,9 @@
 use armies_of_avalon_service::Query;
 use axum::{
+    debug_handler,
     extract::{Json, State},
     http::StatusCode,
 };
-use axum_macros::debug_handler;
 use serde::Deserialize;
 
 use crate::{handlers::armies::get_all_armies, AppState};

@@ -19,7 +19,7 @@ pub async fn validate_access_token(token: String) -> Result<AccessToken, Error> 
     let client = reqwest::Client::new();
     let body = client
         .get(endpoint)
-        .header(AUTHORIZATION, token)
+        .header(AUTHORIZATION, format!("Bearer {token}"))
         .send()
         .await?
         .json::<AccessToken>()
