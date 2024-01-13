@@ -98,11 +98,6 @@ pub async fn get_all_campaign_levels(
             "No matching JWK found for the given kid",
         ));
     }
-    // At this point, we know the token is legit, meaning it hasn't expired
-    // and the public key on this rust server was able to validate the signature
-    // TODO: Validate that the user is who they say they are? How?
-
-    // println!("{:?}", at_result);
 
     let mut campaign_levels: Vec<CampaignLevelsModel> =
         armies_of_avalon_service::Query::get_all_campaign_levels(&state.conn)
