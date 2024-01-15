@@ -1,50 +1,21 @@
-use std::collections::HashMap;
-
-use armies_of_avalon_service::{self, GetAllNationsParams};
+use crate::AppState;
+use armies_of_avalon_service::{self};
 use axum::{
     debug_handler,
-    extract::{Extension, Path, Query, State},
+    extract::{Path, State},
     http::StatusCode,
     Json,
-};
-use axum_extra::{
-    headers::{authorization::Bearer, Authorization},
-    TypedHeader,
 };
 use entity::{
     campaign_levels::Model as CampaignLevelsModel, nation_armies::Model as NationArmiesModel,
     nations::Model as NationsModel,
 };
-
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-
-use crate::{AppState, Claims};
-
-#[debug_handler]
-pub async fn get_all_campaign_nations_details(
-    State(state): State<AppState>,
-    Query(params): Query<GetAllNationsParams>,
-) -> Result<Json<Vec<NationsModel>>, (StatusCode, &'static str)> {
-    let nations: Vec<NationsModel> = armies_of_avalon_service::Query::get_all_nations(
-        &state.conn,
-        params,
-    )
-    .await
-    .expect(
-        "A vec of nations  should return when fetching with or without the is_npc query param!",
-    );
-
-    return Ok(Json(nations));
-}
+use serde::Serialize;
 
 #[debug_handler]
 pub async fn get_all_campaign_levels(
     State(state): State<AppState>,
-    Extension(claims): Extension<HashMap<String, Value>>,
 ) -> Result<Json<Vec<CampaignLevelsModel>>, (StatusCode, &'static str)> {
-    println!("'IT MADE IT: {claims:?}");
-
     let mut campaign_levels: Vec<CampaignLevelsModel> =
         armies_of_avalon_service::Query::get_all_campaign_levels(&state.conn)
             .await

@@ -1,10 +1,14 @@
+use std::collections::HashMap;
+
 use armies_of_avalon_service::Query;
 use axum::{
     debug_handler,
     extract::{Json, State},
     http::StatusCode,
+    Extension,
 };
 use serde::Deserialize;
+use serde_json::Value;
 
 use crate::{handlers::armies::get_all_armies, AppState};
 use aa_battles::{
@@ -21,6 +25,7 @@ pub struct BattleCompetitors {
 #[debug_handler]
 pub async fn run_battle(
     state: State<AppState>,
+    Extension(_claims): Extension<HashMap<String, Value>>,
     Json(body): Json<BattleCompetitors>,
 ) -> Result<
     //Json<Vec<(entity::nations::Model, Vec<entity::nation_armies::Model>)>>,
@@ -34,6 +39,8 @@ pub async fn run_battle(
         .collect::<Vec<Army>>();
 
     army_defaults.sort_by(|a, b| a.id.cmp(&b.id));
+
+    // todo!("Verify that the nation retrieved belongs to the user from the auth token");
 
     //println!("{:?}", body);
     let (east_nation, east_nation_armies) =

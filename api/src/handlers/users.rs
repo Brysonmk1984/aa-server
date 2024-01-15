@@ -1,13 +1,19 @@
+use std::collections::HashMap;
+
 use crate::AppState;
 use armies_of_avalon_service::{Auth0UserPart, Mutation};
-use axum::{debug_handler, extract::State, http::StatusCode, Json};
+use axum::{debug_handler, extract::State, http::StatusCode, Extension, Json};
 use entity::users::Model as UsersModel;
+use serde_json::Value;
 
 #[debug_handler]
 pub async fn create_or_update_user(
     State(state): State<AppState>,
+    Extension(_claims): Extension<HashMap<String, Value>>,
     Json(body): Json<Auth0UserPart>,
 ) -> Result<Json<UsersModel>, (StatusCode, &'static str)> {
+    // todo!("Verify that the user from the auth token is the user from the id_token - partial_user.auth0_sub");
+
     let partial_user = Auth0UserPart {
         email: body.email.to_string(),
         email_verified: body.email_verified,
