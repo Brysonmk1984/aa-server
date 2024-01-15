@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use armies_of_avalon_service::Query;
 use axum::{
     debug_handler,
-    extract::{Json, State},
+    extract::{Json, Path, State},
     http::StatusCode,
     Extension,
 };
@@ -25,13 +25,15 @@ pub struct BattleCompetitors {
 #[debug_handler]
 pub async fn run_battle(
     state: State<AppState>,
-    Extension(_claims): Extension<HashMap<String, Value>>,
+    //Extension(_claims): Extension<HashMap<String, Value>>,
+    Path(level): Path<i32>,
     Json(body): Json<BattleCompetitors>,
 ) -> Result<
     //Json<Vec<(entity::nations::Model, Vec<entity::nation_armies::Model>)>>,
     (),
     (StatusCode, &'static str),
 > {
+    println!("RUNNING BATTLE {level}");
     let result = get_all_armies(state.clone()).await?.0;
     let mut army_defaults = result
         .iter()
@@ -61,6 +63,10 @@ pub async fn run_battle(
             .await
             .expect("Cannot get nation with armies!");
 
+    /*
+    // This doesn't work for campaign nations since Nation.user_id doesn't exist!!!!
+     */
+
     let west_tuple: (Nation, Vec<NationArmy>) = (
         west_nation.clone().into(),
         west_nation_armies
@@ -74,7 +80,7 @@ pub async fn run_battle(
     let result = do_battle(army_defaults, competitors);
 
     println!("{:?}", result);
-
+    println!("6666666");
     //nation_and_nation_armies_one.append(&mut nation_and_nation_armies_two);
 
     let battle_result = entity::battles::Model {

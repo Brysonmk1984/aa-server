@@ -35,7 +35,6 @@ pub async fn get_campaign_nation_details(
     State(state): State<AppState>,
     Path(nation_id): Path<i32>,
 ) -> Result<Json<NationWithArmies>, (StatusCode, &'static str)> {
-    println!("test {nation_id} asd");
     let (nation_details, all_armies) =
         armies_of_avalon_service::Query::get_nation_with_nation_armies_by_nation_id(
             &state.conn,
