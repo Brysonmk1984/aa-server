@@ -16,6 +16,7 @@ use strum::EnumString;
 pub struct Query;
 
 pub mod battles_service;
+pub mod campaign_service;
 pub mod external_requests;
 
 #[derive(Deserialize)]

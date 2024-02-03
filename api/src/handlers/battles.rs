@@ -1,3 +1,4 @@
+#![allow(warnings)]
 use std::collections::HashMap;
 
 use armies_of_avalon_service::battles_service;
@@ -83,21 +84,39 @@ pub async fn run_battle(
     let competitors = (east_tuple, west_tuple);
     let outcome = do_battle(army_defaults, competitors);
 
-    // @todo add record for nation_campaign_levels
+    let campaign_level =
+        armies_of_avalon_service::Query::get_campaign_level_by_level_number(&state.conn, level)
+            .await
+            .expect("Expected to get campaign level but failed.");
+
+    let campaign_nation_level_result =
+        armies_of_avalon_service::Mutation::upsert_nation_campaign_level(
+            &state.conn,
+            east_nation.id,
+            campaign_level.id,
+            east_nation.name,
+            level,
+        )
+        .await
+        .expect("Expected to insert nation_campaign_level but failed.");
+
+    println!("{campaign_nation_level_result:?}");
 
     let battle_record_result = armies_of_avalon_service::Mutation::insert_battle_record(
         &state.conn,
         east_nation.id,
         west_nation.id,
-        Some(level),
+        Some(campaign_nation_level_result.id),
     )
     .await
     .expect("Cannot insert battle record!");
 
+    println!("{battle_record_result:?}");
+
     let setting = BattlesModel {
         nation_id_east: east_nation.id,
         nation_id_west: west_nation.id,
-        nation_campaign_level_id: None,
+        nation_campaign_level_id: Some(campaign_nation_level_result.id),
         ..Default::default()
     };
 
