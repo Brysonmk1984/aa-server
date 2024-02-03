@@ -15,6 +15,7 @@ use serde::Deserialize;
 use strum::EnumString;
 pub struct Query;
 
+pub mod battles_service;
 pub mod external_requests;
 
 #[derive(Deserialize)]
@@ -130,6 +131,20 @@ impl Query {
     pub async fn get_all_campaign_levels(db: &DbConn) -> Result<Vec<CampaignLevelsModel>, DbErr> {
         let campaign_levels: Vec<CampaignLevelsModel> = CampaignLevels::find().all(db).await?;
         Ok(campaign_levels)
+    }
+
+    pub async fn get_campaign_level_id_by_level_number(
+        db: &DbConn,
+        level: i32,
+    ) -> Result<i32, DbErr> {
+        let campaign_levels: Result<std::option::Option<CampaignLevelsModel>, DbErr> =
+            CampaignLevels::find()
+                .filter(campaign_levels::Column::Level.eq(level))
+                .one(db)
+                .await;
+
+        let campaign_level: CampaignLevelsModel = campaign_levels.unwrap().unwrap();
+        Ok(campaign_level.id)
     }
 }
 

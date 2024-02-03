@@ -41,7 +41,7 @@ async fn start() -> anyhow::Result<()> {
     let app: Router = Router::new()
         .nest("/battles", battles_routes(&state))
         .nest("/kingdom", kingdom_routes(&state))
-        //.route_layer(axum::middleware::from_fn(authz_check))
+        .route_layer(axum::middleware::from_fn(authz_check))
         .nest("/campaign", campaign_routes(&state))
         .nest("/users", users_routes(&state))
         .nest("/armies", armies_routes(&state))

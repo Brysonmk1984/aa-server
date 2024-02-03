@@ -24,7 +24,7 @@ impl Into<Nation> for NationModel {
     fn into(self) -> Nation {
         Nation {
             id: self.id,
-            user_id: self.user_id.unwrap(),
+            user_id: self.user_id.unwrap_or_default(),
             name: self.name,
             gold: self.gold,
             is_npc: self.is_npc,
