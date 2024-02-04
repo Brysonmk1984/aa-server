@@ -13,6 +13,7 @@ pub struct Model {
     pub nation_name: String,
     pub level: i32,
     pub attempts: i32,
+    pub completed: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

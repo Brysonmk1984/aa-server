@@ -37,6 +37,7 @@ impl Mutation {
         campaign_level_id: i32,
         nation_name: String,
         level_number: i32,
+        completed: bool,
     ) -> Result<NationCampaignLevelModel, DbErr> {
         let existing_level_by_nation_id = NationCampaignLevel::find()
             .filter(nation_campaign_levels::Column::NationId.eq(nation_id))
@@ -56,6 +57,7 @@ impl Mutation {
                     nation_name: Set(nation_name),
                     level: Set(nation_cl.level),
                     attempts: Set(nation_cl.attempts + 1),
+                    completed: Set(completed),
                     ..Default::default()
                 };
 
@@ -69,6 +71,7 @@ impl Mutation {
                     nation_name: Set(nation_name),
                     level: Set(level_number),
                     attempts: Set(1),
+                    completed: Set(completed),
                     ..Default::default()
                 };
 

@@ -1,6 +1,7 @@
 #![allow(warnings)]
 use std::collections::HashMap;
 
+use aa_battles::types::Belligerent;
 use armies_of_avalon_service::battles_service;
 use armies_of_avalon_service::Query;
 use axum::{
@@ -14,6 +15,7 @@ use serde_json::Value;
 
 use entity::battles::Model as BattlesModel;
 
+use crate::handlers;
 use crate::{handlers::armies::get_all_armies, AppState};
 use aa_battles::{
     do_battle,
@@ -82,7 +84,9 @@ pub async fn run_battle(
     );
 
     let competitors = (east_tuple, west_tuple);
-    let outcome = do_battle(army_defaults, competitors);
+    let (battle_result, battle_description) = do_battle(army_defaults, competitors);
+
+    let completed_level = battle_result.winner == Some(Belligerent::EasternArmy);
 
     let campaign_level =
         armies_of_avalon_service::Query::get_campaign_level_by_level_number(&state.conn, level)
@@ -96,6 +100,7 @@ pub async fn run_battle(
             campaign_level.id,
             east_nation.name,
             level,
+            completed_level,
         )
         .await
         .expect("Expected to insert nation_campaign_level but failed.");
@@ -120,7 +125,10 @@ pub async fn run_battle(
         ..Default::default()
     };
 
-    let battle_stats = BattleStats { setting, outcome };
+    let battle_stats = BattleStats {
+        setting,
+        outcome: battle_description,
+    };
 
     println!("{battle_stats:?}");
 

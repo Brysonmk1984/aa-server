@@ -32,6 +32,7 @@ mod m20231126_144923_add_campaign_nations;
 mod m20231126_195724_add_campaign_armies;
 mod m20231203_211014_add_campaign_levels;
 mod m20231210_154718_add_lore_col_to_campaign_levels;
+mod m20240204_203834_add_level_completed_to_campaign_levels;
 mod utils;
 
 pub struct Migrator;
@@ -73,6 +74,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20231126_195724_add_campaign_armies::Migration),
             Box::new(m20231203_211014_add_campaign_levels::Migration),
             Box::new(m20231210_154718_add_lore_col_to_campaign_levels::Migration),
+            Box::new(m20240204_203834_add_level_completed_to_campaign_levels::Migration),
         ]
     }
 }
