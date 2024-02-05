@@ -9,10 +9,12 @@ pub struct Migration;
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
-            ALTER TABLE nation_campaign_levels
-            ADD COLUMN completed BOOLEAN NOT NULL DEFAULT false,
-            ADD created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            ADD updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+            CREATE TRIGGER update_updated_at
+            BEFORE UPDATE
+            ON
+                nation_campaign_levels
+            FOR EACH ROW
+                EXECUTE PROCEDURE update_updated_at_task();
             ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
         raw_sql_migration(manager, statement).await
@@ -20,10 +22,7 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
-            ALTER TABLE nation_campaign_levels
-            DROP COLUMN completed,
-            DROP COLUMN created_at,
-            DROP COLUMN updated_at
+            DROP TRIGGER update_updated_at ON nation_campaign_levels;
         ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
         raw_sql_migration(manager, statement).await

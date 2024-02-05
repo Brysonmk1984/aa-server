@@ -32,7 +32,13 @@ mod m20231126_144923_add_campaign_nations;
 mod m20231126_195724_add_campaign_armies;
 mod m20231203_211014_add_campaign_levels;
 mod m20231210_154718_add_lore_col_to_campaign_levels;
+mod m20240204_203833_add_update_procedure;
 mod m20240204_203834_add_level_completed_to_campaign_levels;
+mod m20240205_142814_add_date_to_nation_armies;
+mod m20240205_143646_add_date_to_battles;
+mod m20240205_143748_add_date_to_nations;
+mod m20240205_143859_add_date_to_users;
+mod m20240205_150052_add_update_function_call_nation_cl;
 mod utils;
 
 pub struct Migrator;
@@ -74,7 +80,13 @@ impl MigratorTrait for Migrator {
             Box::new(m20231126_195724_add_campaign_armies::Migration),
             Box::new(m20231203_211014_add_campaign_levels::Migration),
             Box::new(m20231210_154718_add_lore_col_to_campaign_levels::Migration),
+            Box::new(m20240204_203833_add_update_procedure::Migration),
             Box::new(m20240204_203834_add_level_completed_to_campaign_levels::Migration),
+            Box::new(m20240205_142814_add_date_to_nation_armies::Migration),
+            Box::new(m20240205_143646_add_date_to_battles::Migration),
+            Box::new(m20240205_143748_add_date_to_nations::Migration),
+            Box::new(m20240205_143859_add_date_to_users::Migration),
+            Box::new(m20240205_150052_add_update_function_call_nation_cl::Migration),
         ]
     }
 }

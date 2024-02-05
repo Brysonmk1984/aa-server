@@ -9,8 +9,7 @@ pub struct Migration;
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
-            ALTER TABLE nation_campaign_levels
-            ADD COLUMN completed BOOLEAN NOT NULL DEFAULT false,
+            ALTER TABLE nations
             ADD created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
             ADD updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
             ";
@@ -20,8 +19,7 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
-            ALTER TABLE nation_campaign_levels
-            DROP COLUMN completed,
+            ALTER TABLE nations
             DROP COLUMN created_at,
             DROP COLUMN updated_at
         ";
