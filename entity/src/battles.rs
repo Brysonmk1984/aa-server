@@ -11,6 +11,9 @@ pub struct Model {
     pub nation_id_east: i32,
     pub nation_id_west: i32,
     pub nation_campaign_level_id: Option<i32>,
+    pub created_at: String,
+    pub updated_at: String,
+    pub outcome: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -13,6 +13,8 @@ pub struct Model {
     pub name: String,
     pub gold: i32,
     pub is_npc: bool,
+    pub created_at: String,
+    pub updated_at: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

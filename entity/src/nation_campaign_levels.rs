@@ -14,6 +14,8 @@ pub struct Model {
     pub level: i32,
     pub attempts: i32,
     pub completed: bool,
+    pub created_at: String,
+    pub updated_at: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

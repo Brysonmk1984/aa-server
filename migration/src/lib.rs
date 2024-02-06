@@ -43,6 +43,7 @@ mod m20240206_141829_add_update_2;
 mod m20240206_141911_add_update_3;
 mod m20240206_142013_add_update_4;
 mod m20240206_142039_add_update_5;
+mod m20240206_144131_add_outcome_to_battles;
 mod utils;
 
 pub struct Migrator;
@@ -95,6 +96,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20240206_141911_add_update_3::Migration),
             Box::new(m20240206_142013_add_update_4::Migration),
             Box::new(m20240206_142039_add_update_5::Migration),
+            Box::new(m20240206_144131_add_outcome_to_battles::Migration),
         ]
     }
 }

@@ -12,6 +12,8 @@ pub struct Model {
     pub army_id: i32,
     pub count: i32,
     pub army_name: String,
+    pub created_at: String,
+    pub updated_at: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
