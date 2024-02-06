@@ -12,8 +12,8 @@ pub struct Model {
     pub auth0_sub: String,
     pub email: String,
     pub email_verified: bool,
-    pub created_at: String,
-    pub updated_at: String,
+    pub created_at: DateTimeWithTimeZone,
+    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

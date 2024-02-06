@@ -112,6 +112,7 @@ pub async fn run_battle(
         east_nation.id,
         west_nation.id,
         Some(campaign_nation_level_result.id),
+        //outcome
     )
     .await
     .expect("Cannot insert battle record!");
