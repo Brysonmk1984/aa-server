@@ -39,6 +39,10 @@ mod m20240205_143646_add_date_to_battles;
 mod m20240205_143748_add_date_to_nations;
 mod m20240205_143859_add_date_to_users;
 mod m20240205_150052_add_update_function_call_nation_cl;
+mod m20240206_141829_add_update_2;
+mod m20240206_141911_add_update_3;
+mod m20240206_142013_add_update_4;
+mod m20240206_142039_add_update_5;
 mod utils;
 
 pub struct Migrator;
@@ -87,6 +91,10 @@ impl MigratorTrait for Migrator {
             Box::new(m20240205_143748_add_date_to_nations::Migration),
             Box::new(m20240205_143859_add_date_to_users::Migration),
             Box::new(m20240205_150052_add_update_function_call_nation_cl::Migration),
+            Box::new(m20240206_141829_add_update_2::Migration),
+            Box::new(m20240206_141911_add_update_3::Migration),
+            Box::new(m20240206_142013_add_update_4::Migration),
+            Box::new(m20240206_142039_add_update_5::Migration),
         ]
     }
 }
