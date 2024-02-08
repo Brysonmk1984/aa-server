@@ -86,12 +86,17 @@ pub async fn run_battle(
     let competitors = (east_tuple, west_tuple);
     let (battle_result, battle_description) = do_battle(army_defaults, competitors);
 
-    let completed_level = battle_result.winner == Some(Belligerent::EasternArmy);
-
     let campaign_level =
         armies_of_avalon_service::Query::get_campaign_level_by_level_number(&state.conn, level)
             .await
             .expect("Expected to get campaign level but failed.");
+
+    let completed_level = battle_result.winner == Some(Belligerent::EasternArmy);
+    let winner = if completed_level {
+        east_nation.id
+    } else {
+        west_nation.id
+    };
 
     let campaign_nation_level_result =
         armies_of_avalon_service::Mutation::upsert_nation_campaign_level(
@@ -112,7 +117,7 @@ pub async fn run_battle(
         east_nation.id,
         west_nation.id,
         Some(campaign_nation_level_result.id),
-        //outcome
+        winner,
     )
     .await
     .expect("Cannot insert battle record!");

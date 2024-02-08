@@ -13,7 +13,7 @@ pub struct Model {
     pub nation_campaign_level_id: Option<i32>,
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
-    pub outcome: String,
+    pub winner: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

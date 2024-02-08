@@ -62,7 +62,7 @@ impl Default for BattleModel {
             nation_campaign_level_id: Default::default(),
             created_at: Default::default(),
             updated_at: Default::default(),
-            outcome: Default::default(),
+            winner: Default::default(),
         }
     }
 }

@@ -10,7 +10,7 @@ impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
             ALTER TABLE battles
-                ADD COLUMN outcome CHAR(5) NOT NULL DEFAULT 'TBD'
+                ADD COLUMN winner INT
             ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
         raw_sql_migration(manager, statement).await
@@ -19,7 +19,7 @@ impl MigrationTrait for Migration {
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
             ALTER TABLE battles
-                DROP COLUMN outcome
+                DROP COLUMN winner
         ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
         raw_sql_migration(manager, statement).await
