@@ -76,7 +76,7 @@ pub async fn run_battle(
     );
 
     let competitors = (east_tuple, west_tuple);
-    let (battle_result, battle_description) = do_battle(army_defaults, competitors);
+    let (battle_result, battle_description) = do_battle(army_defaults, competitors)?;
 
     let campaign_level =
         armies_of_avalon_service::Query::get_campaign_level_by_level_number(&state.conn, level)
