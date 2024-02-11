@@ -16,6 +16,7 @@ use serde_json::Value;
 use entity::battles::Model as BattlesModel;
 
 use crate::handlers;
+use crate::utils::error::AppError;
 use crate::{handlers::armies::get_all_armies, AppState};
 use aa_battles::{
     do_battle,
@@ -37,14 +38,9 @@ pub struct BattleStats {
 #[debug_handler]
 pub async fn run_battle(
     state: State<AppState>,
-    //Extension(_claims): Extension<HashMap<String, Value>>,
     Path(level): Path<i32>,
     Json(body): Json<BattleCompetitors>,
-) -> Result<
-    //Json<Vec<(entity::nations::Model, Vec<entity::nation_armies::Model>)>>,
-    Json<BattleStats>,
-    (StatusCode, &'static str),
-> {
+) -> Result<Json<BattleStats>, AppError> {
     println!("RUNNING BATTLE {level}");
     let result = get_all_armies(state.clone()).await?.0;
     let mut army_defaults = result
@@ -58,9 +54,7 @@ pub async fn run_battle(
 
     //println!("{:?}", body);
     let (east_nation, east_nation_armies) =
-        Query::get_nation_with_nation_armies(&state.conn, body.east_competitor)
-            .await
-            .expect("Cannot get nation with armies!");
+        Query::get_nation_with_nation_armies(&state.conn, body.east_competitor).await?;
 
     let east_tuple: (Nation, Vec<NationArmy>) = (
         east_nation.clone().into(),
@@ -71,9 +65,7 @@ pub async fn run_battle(
     );
 
     let (west_nation, west_nation_armies) =
-        Query::get_nation_with_nation_armies(&state.conn, body.west_competitor)
-            .await
-            .expect("Cannot get nation with armies!");
+        Query::get_nation_with_nation_armies(&state.conn, body.west_competitor).await?;
 
     let west_tuple: (Nation, Vec<NationArmy>) = (
         west_nation.clone().into(),
@@ -88,8 +80,7 @@ pub async fn run_battle(
 
     let campaign_level =
         armies_of_avalon_service::Query::get_campaign_level_by_level_number(&state.conn, level)
-            .await
-            .expect("Expected to get campaign level but failed.");
+            .await?;
 
     let completed_level = battle_result.winner == Some(Belligerent::EasternArmy);
     let winner = if completed_level {
@@ -107,8 +98,7 @@ pub async fn run_battle(
             level,
             completed_level,
         )
-        .await
-        .expect("Expected to insert nation_campaign_level but failed.");
+        .await?;
 
     println!("{campaign_nation_level_result:?}");
 
@@ -119,8 +109,7 @@ pub async fn run_battle(
         Some(campaign_nation_level_result.id),
         winner,
     )
-    .await
-    .expect("Cannot insert battle record!");
+    .await?;
 
     println!("{battle_record_result:?}");
 

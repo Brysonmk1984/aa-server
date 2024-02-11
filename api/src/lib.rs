@@ -3,9 +3,10 @@ extern crate aa_battles;
 mod handlers;
 mod middleware;
 mod routes;
+mod utils;
 
 use armies_of_avalon_service::sea_orm::{Database, DatabaseConnection};
-use axum::{serve, BoxError, Extension, Router};
+use axum::{serve, Router};
 
 use migration::{Migrator, MigratorTrait};
 
