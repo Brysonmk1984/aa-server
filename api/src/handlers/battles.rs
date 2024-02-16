@@ -2,6 +2,7 @@
 use std::collections::HashMap;
 
 use aa_battles::types::Belligerent;
+use aa_battles::EndBattlePayload;
 use armies_of_avalon_service::battles_service;
 use armies_of_avalon_service::Query;
 use axum::{
@@ -32,7 +33,7 @@ pub struct BattleCompetitors {
 #[derive(Serialize, Debug)]
 pub struct BattleStats {
     setting: BattlesModel,
-    outcome: String,
+    outcome: EndBattlePayload,
 }
 
 #[debug_handler]
@@ -76,13 +77,13 @@ pub async fn run_battle(
     );
 
     let competitors = (east_tuple, west_tuple);
-    let (battle_result, battle_description) = do_battle(army_defaults, competitors)?;
+    let end_battle_payload = do_battle(army_defaults, competitors)?;
 
     let campaign_level =
         armies_of_avalon_service::Query::get_campaign_level_by_level_number(&state.conn, level)
             .await?;
 
-    let completed_level = battle_result.winner == Some(Belligerent::EasternArmy);
+    let completed_level = end_battle_payload.battle_result.winner == Some(Belligerent::EasternArmy);
     let winner = if completed_level {
         east_nation.id
     } else {
@@ -122,7 +123,7 @@ pub async fn run_battle(
 
     let battle_stats = BattleStats {
         setting,
-        outcome: battle_description,
+        outcome: end_battle_payload,
     };
 
     println!("{battle_stats:?}");
