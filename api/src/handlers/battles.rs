@@ -41,7 +41,7 @@ pub async fn run_battle(
     state: State<AppState>,
     Path(level): Path<i32>,
     Json(body): Json<BattleCompetitors>,
-) -> Result<Json<BattleStats>, AppError> {
+) -> Result<Json<EndBattlePayload>, AppError> {
     println!("RUNNING BATTLE {level}");
     let result = get_all_armies(state.clone()).await?.0;
     let mut army_defaults = result
@@ -77,6 +77,14 @@ pub async fn run_battle(
     );
 
     let competitors = (east_tuple, west_tuple);
+    // let EndBattlePayload {
+    //     battle_result,
+    //     headline,
+    //     events,
+    //     end_state,
+    //     outcome,
+    // } = do_battle(army_defaults, competitors)?;
+
     let end_battle_payload = do_battle(army_defaults, competitors)?;
 
     let campaign_level =
@@ -121,12 +129,12 @@ pub async fn run_battle(
         ..Default::default()
     };
 
-    let battle_stats = BattleStats {
-        setting,
-        outcome: end_battle_payload,
-    };
+    // let battle_stats = BattleStats {
+    //     setting,
+    //     outcome: end_battle_payload,
+    // };
 
-    println!("{battle_stats:?}");
+    //println!("{battle_stats:?}");
 
-    Ok(Json(battle_stats))
+    Ok(Json(end_battle_payload))
 }
