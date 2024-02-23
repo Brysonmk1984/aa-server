@@ -18,10 +18,11 @@ use entity::battles::Model as BattlesModel;
 
 use crate::handlers;
 use crate::utils::error::AppError;
+use crate::WEAPON_ARMOR_CELL;
 use crate::{handlers::armies::get_all_armies, AppState};
 use aa_battles::{
     do_battle,
-    types::{Army, BattleResult, Nation, NationArmy},
+    types::{Army, BattleResult, GameDefaults, Nation, NationArmy},
 };
 
 #[derive(Deserialize, Debug)]
@@ -85,7 +86,11 @@ pub async fn run_battle(
     //     outcome,
     // } = do_battle(army_defaults, competitors)?;
 
-    let end_battle_payload = do_battle(army_defaults, competitors)?;
+    let game_defaults = GameDefaults {
+        weapons_vs_armor: WEAPON_ARMOR_CELL.get().unwrap(),
+    };
+
+    let end_battle_payload = do_battle(game_defaults, army_defaults, competitors)?;
 
     let campaign_level =
         armies_of_avalon_service::Query::get_campaign_level_by_level_number(&state.conn, level)
