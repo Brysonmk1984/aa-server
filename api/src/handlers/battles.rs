@@ -1,5 +1,5 @@
 #![allow(warnings)]
-use std::collections::HashMap;
+use std::{collections::HashMap, env};
 
 use aa_battles::types::Belligerent;
 use aa_battles::EndBattlePayload;
@@ -88,6 +88,7 @@ pub async fn run_battle(
 
     let game_defaults = GameDefaults {
         weapons_vs_armor: WEAPON_ARMOR_CELL.get().unwrap(),
+        environment: env::var("ENVIRONMENT").unwrap(),
     };
 
     let end_battle_payload = do_battle(game_defaults, army_defaults, competitors)?;
