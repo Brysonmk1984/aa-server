@@ -109,5 +109,5 @@ pub fn set_weapon_armor_hash() {
         ("magic-chain", 1.0),
         ("magic-plate", 0.75),
     ]);
-    WEAPON_ARMOR_CELL.set(map);
+    let _ = WEAPON_ARMOR_CELL.set(map);
 }
