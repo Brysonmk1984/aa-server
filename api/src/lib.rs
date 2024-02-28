@@ -5,7 +5,10 @@ mod middleware;
 mod routes;
 mod utils;
 
+use aa_battles::types::{Army, ArmyName};
+use aa_battles::util::create_hash_of_defaults;
 use armies_of_avalon_service::sea_orm::{Database, DatabaseConnection};
+use armies_of_avalon_service::Query;
 use axum::{serve, Router};
 
 use migration::{Migrator, MigratorTrait};
@@ -29,6 +32,12 @@ use crate::routes::{
  */
 static WEAPON_ARMOR_CELL: OnceLock<HashMap<&'static str, f64>> = OnceLock::new();
 
+/**
+ * ARMY_DEFAULT_CELL
+ * stores a hash map of f64s for weapon type against armor type
+ */
+static ARMY_DEFAULT_CELL: OnceLock<HashMap<ArmyName, Army>> = OnceLock::new();
+
 #[derive(Clone, Debug)]
 pub struct AppState {
     conn: DatabaseConnection,
@@ -46,9 +55,10 @@ async fn start() -> anyhow::Result<()> {
         .expect("Database connection failed");
     Migrator::up(&conn, None).await.unwrap();
 
-    set_weapon_armor_hash();
-
     let state = AppState { conn };
+
+    initialize_defaults_to_memory(&state).await.unwrap();
+
     let app: Router = Router::new()
         .nest("/battles", battles_routes(&state))
         .nest("/kingdom", kingdom_routes(&state))
@@ -110,4 +120,21 @@ pub fn set_weapon_armor_hash() {
         ("magic-plate", 0.75),
     ]);
     let _ = WEAPON_ARMOR_CELL.set(map);
+}
+
+pub async fn initialize_defaults_to_memory(state: &AppState) -> anyhow::Result<()> {
+    set_weapon_armor_hash();
+
+    let result = Query::get_all_armies(&state.conn).await?;
+    let mut army_defaults: Vec<Army> = result
+        .iter()
+        .map(|army| army.clone().into())
+        .collect::<Vec<Army>>();
+
+    army_defaults.sort_by(|a, b| a.id.cmp(&b.id));
+
+    let army_default_hash = create_hash_of_defaults(army_defaults);
+
+    let _ = ARMY_DEFAULT_CELL.set(army_default_hash);
+    Ok(())
 }

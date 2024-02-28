@@ -18,6 +18,7 @@ use entity::battles::Model as BattlesModel;
 
 use crate::handlers;
 use crate::utils::error::AppError;
+use crate::ARMY_DEFAULT_CELL;
 use crate::WEAPON_ARMOR_CELL;
 use crate::{handlers::armies::get_all_armies, AppState};
 use aa_battles::{
@@ -45,12 +46,6 @@ pub async fn run_battle(
 ) -> Result<Json<EndBattlePayload>, AppError> {
     println!("RUNNING BATTLE {level}");
     let result = get_all_armies(state.clone()).await?.0;
-    let mut army_defaults = result
-        .iter()
-        .map(|army| army.clone().into())
-        .collect::<Vec<Army>>();
-
-    army_defaults.sort_by(|a, b| a.id.cmp(&b.id));
 
     // todo!("Verify that the nation retrieved belongs to the user from the auth token");
 
@@ -88,10 +83,11 @@ pub async fn run_battle(
 
     let game_defaults = GameDefaults {
         weapons_vs_armor: WEAPON_ARMOR_CELL.get().unwrap(),
+        army_defaults: ARMY_DEFAULT_CELL.get().unwrap(),
         environment: env::var("ENVIRONMENT").unwrap(),
     };
 
-    let end_battle_payload = do_battle(game_defaults, army_defaults, competitors)?;
+    let end_battle_payload = do_battle(game_defaults, competitors)?;
 
     let campaign_level =
         armies_of_avalon_service::Query::get_campaign_level_by_level_number(&state.conn, level)
