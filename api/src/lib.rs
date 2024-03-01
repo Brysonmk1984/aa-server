@@ -7,6 +7,7 @@ mod utils;
 
 use aa_battles::types::{Army, ArmyName};
 use aa_battles::util::create_hash_of_defaults;
+use armies_of_avalon_service::cron_service::initialize_scheduler;
 use armies_of_avalon_service::sea_orm::{Database, DatabaseConnection};
 use armies_of_avalon_service::Query;
 use axum::{serve, Router};
@@ -47,7 +48,6 @@ pub struct AppState {
 async fn start() -> anyhow::Result<()> {
     env::set_var("RUST_LOG", "debug");
     tracing_subscriber::fmt::init();
-
     dotenvy::dotenv().ok();
 
     let conn = Database::connect(env::var("DATABASE_URL").unwrap().to_owned())
@@ -58,6 +58,7 @@ async fn start() -> anyhow::Result<()> {
     let state = AppState { conn };
 
     initialize_defaults_to_memory(&state).await.unwrap();
+    //initialize_scheduler().await?;
 
     let app: Router = Router::new()
         .nest("/battles", battles_routes(&state))
