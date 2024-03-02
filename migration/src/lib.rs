@@ -44,6 +44,8 @@ mod m20240206_141911_add_update_3;
 mod m20240206_142013_add_update_4;
 mod m20240206_142039_add_update_5;
 mod m20240206_144131_add_outcome_to_battles;
+mod m20240302_174457_add_col_unlock_level_to_armies;
+mod m20240302_175430_add_add_level_value_to_unlock_level_col;
 mod utils;
 
 pub struct Migrator;
@@ -97,6 +99,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20240206_142013_add_update_4::Migration),
             Box::new(m20240206_142039_add_update_5::Migration),
             Box::new(m20240206_144131_add_outcome_to_battles::Migration),
+            Box::new(m20240302_174457_add_col_unlock_level_to_armies::Migration),
+            Box::new(m20240302_175430_add_add_level_value_to_unlock_level_col::Migration),
         ]
     }
 }

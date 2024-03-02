@@ -33,7 +33,7 @@ impl MigrationTrait for Migration {
                 (DEFAULT, 171, 2, 2000, 'Imperial Legionnaires'),
                 (DEFAULT, 171, 3, 500, 'North Watch Longbowmen'),
                 (DEFAULT, 171, 9, 5000, 'Magi Enforcers'),
-                (DEFAULT, 171, 18, 500, 'Oath-Sworn Knights'),
+                (DEFAULT, 171, 7, 500, 'Amazonian Huntresses'),
                 --7
                 (DEFAULT, 172, 4, 6000, 'Highborn Cavalry'),
                 (DEFAULT, 172, 8, 4000, 'Avian Cliff Dwellers'),
