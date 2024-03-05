@@ -12,6 +12,7 @@ use armies_of_avalon_service::sea_orm::{Database, DatabaseConnection};
 use armies_of_avalon_service::Query;
 use axum::{serve, Router};
 
+use migration::sea_orm::prelude::Decimal;
 use migration::{Migrator, MigratorTrait};
 
 use std::collections::HashMap;
@@ -31,7 +32,7 @@ use crate::routes::{
  * WEAPON_ARMOR_CELL
  * stores a hash map of f64s for weapon type against armor type
  */
-static WEAPON_ARMOR_CELL: OnceLock<HashMap<&'static str, f64>> = OnceLock::new();
+static WEAPON_ARMOR_CELL: OnceLock<HashMap<String, f64>> = OnceLock::new();
 
 /**
  * ARMY_DEFAULT_CELL
@@ -97,34 +98,24 @@ pub fn main() {
  * fn set_weapon_armor_map
  * used for initializing the chance to hit given weapon type against armor type
  */
-pub fn set_weapon_armor_hash() {
-    let map = HashMap::from([
-        ("piercing-unarmored", 1.0),
-        ("piercing-leather", 0.75),
-        ("piercing-chain", 0.6),
-        ("piercing-plate", 0.1),
-        ("crushing-unarmored", 0.25),
-        ("crushing-leather", 0.50),
-        ("crushing-chain", 0.75),
-        ("crushing-plate", 1.0),
-        ("blunt-unarmored", 0.75),
-        ("blunt-leather", 0.75),
-        ("blunt-chain", 0.5),
-        ("blunt-plate", 0.25),
-        ("edged-unarmored", 1.0),
-        ("edged-leather", 0.75),
-        ("edged-chain", 0.5),
-        ("edged-plate", 0.25),
-        ("magic-unarmored", 0.25),
-        ("magic-leather", 0.50),
-        ("magic-chain", 1.0),
-        ("magic-plate", 0.75),
-    ]);
-    let _ = WEAPON_ARMOR_CELL.set(map);
+pub async fn set_weapon_armor_hash(state: &AppState) -> anyhow::Result<()> {
+    let weapon_armor_result: Vec<entity::weapon_armor::Model> =
+        Query::get_weapon_armor_reduction_values(&state.conn).await?;
+
+    let mut weapon_armor_hashmap: HashMap<String, f64> = HashMap::new();
+
+    weapon_armor_result.into_iter().for_each(|item| {
+        let key = item.weapon + "-" + item.armor.unwrap().as_str();
+        weapon_armor_hashmap.insert(key, item.reduction.try_into().unwrap());
+    });
+
+    let _ = WEAPON_ARMOR_CELL.set(weapon_armor_hashmap);
+
+    Ok(())
 }
 
 pub async fn initialize_defaults_to_memory(state: &AppState) -> anyhow::Result<()> {
-    set_weapon_armor_hash();
+    set_weapon_armor_hash(state).await?;
 
     let result = Query::get_all_armies(&state.conn).await?;
     let mut army_defaults: Vec<Army> = result

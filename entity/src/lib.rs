@@ -10,3 +10,4 @@ pub mod nation_campaign_levels;
 pub mod nations;
 pub mod trait_implementations;
 pub mod users;
+pub mod weapon_armor;

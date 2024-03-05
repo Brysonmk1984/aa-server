@@ -7,3 +7,4 @@ pub use super::nation_armies::Entity as NationArmies;
 pub use super::nation_campaign_levels::Entity as NationCampaignLevels;
 pub use super::nations::Entity as Nations;
 pub use super::users::Entity as Users;
+pub use super::weapon_armor::Entity as WeaponArmor;

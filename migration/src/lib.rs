@@ -47,6 +47,8 @@ mod m20240206_144131_add_outcome_to_battles;
 mod m20240302_174457_add_col_unlock_level_to_armies;
 mod m20240302_175430_add_add_level_value_to_unlock_level_col;
 mod m20240302_182213_insert_army_lore_values;
+mod m20240304_135636_create_weapon_armor_table;
+mod m20240304_140403_insert_weapon_armor_values;
 mod utils;
 
 pub struct Migrator;
@@ -103,6 +105,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20240302_174457_add_col_unlock_level_to_armies::Migration),
             Box::new(m20240302_175430_add_add_level_value_to_unlock_level_col::Migration),
             Box::new(m20240302_182213_insert_army_lore_values::Migration),
+            Box::new(m20240304_135636_create_weapon_armor_table::Migration),
+            Box::new(m20240304_140403_insert_weapon_armor_values::Migration),
         ]
     }
 }
