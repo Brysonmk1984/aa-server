@@ -1,5 +1,5 @@
 use crate::{utils::error::AppError, AppState};
-use armies_of_avalon_service::{self};
+use armies_of_avalon_service::{self, campaign_service::CampaignQuery};
 use axum::{
     debug_handler,
     extract::{Path, State},
@@ -16,7 +16,7 @@ pub async fn get_all_campaign_levels(
     State(state): State<AppState>,
 ) -> Result<Json<Vec<CampaignLevelsModel>>, AppError> {
     let mut campaign_levels: Vec<CampaignLevelsModel> =
-        armies_of_avalon_service::Query::get_all_campaign_levels(&state.conn).await?;
+        CampaignQuery::get_all_campaign_levels(&state.conn).await?;
     campaign_levels.sort_by_key(|campaign_level| campaign_level.level);
     return Ok(Json(campaign_levels));
 }
@@ -33,11 +33,8 @@ pub async fn get_campaign_nation_details(
     Path(nation_id): Path<i32>,
 ) -> Result<Json<NationWithArmies>, AppError> {
     let (nation_details, all_armies) =
-        armies_of_avalon_service::Query::get_nation_with_nation_armies_by_nation_id(
-            &state.conn,
-            nation_id,
-        )
-        .await?;
+        CampaignQuery::get_campaign_nation_with_nation_armies_by_nation_id(&state.conn, nation_id)
+            .await?;
 
     let combined_nation_armies = NationWithArmies {
         nation_details,

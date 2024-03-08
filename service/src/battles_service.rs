@@ -1,12 +1,10 @@
-use ::entity::battles::{Entity as Battles, Model as BattlesModel};
-use ::entity::campaign_levels::{self, Entity as CampaignLevels, Model as CampaignLevelsModel};
+use ::entity::battles::Model as BattlesModel;
+
 use entity::battles;
-use sea_orm::sea_query::Query;
+
 use sea_orm::{ActiveModelTrait, DbConn, DbErr, Set};
-
-use crate::Mutation;
-
-impl Mutation {
+pub struct BattleMutation;
+impl BattleMutation {
     pub async fn insert_battle_record(
         db: &DbConn,
         nation_id_east: i32,

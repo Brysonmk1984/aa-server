@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use armies_of_avalon_service::{Mutation, Query};
+use armies_of_avalon_service::nation_service::{NationMutation, NationQuery};
 use axum::{
     debug_handler,
     extract::{Path, State},
@@ -21,7 +21,7 @@ pub async fn get_nation_and_armies_by_user_id(
     // todo!("Verify that the user from the auth token is the one user from user_id");
 
     let nation_and_armies =
-        Query::get_nation_with_nation_armies_by_user_id(&state.conn, user_id).await?;
+        NationQuery::get_nation_with_nation_armies_by_user_id(&state.conn, user_id).await?;
     dbg!(&nation_and_armies);
     Ok(Json(nation_and_armies))
 }
@@ -36,7 +36,7 @@ pub async fn buy_army(
 
     // todo!("Verify that the user from the auth token is the one buying the army");
 
-    let result = Mutation::buy_army(&state.conn, nation_id, army_id).await?;
+    let result = NationMutation::buy_army(&state.conn, nation_id, army_id).await?;
 
     Ok(Json(result))
 }

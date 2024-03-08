@@ -3,8 +3,11 @@ use std::{collections::HashMap, env};
 
 use aa_battles::types::Belligerent;
 use aa_battles::EndBattlePayload;
-use armies_of_avalon_service::battles_service;
-use armies_of_avalon_service::Query;
+use armies_of_avalon_service::{
+    battles_service::{self, BattleMutation},
+    campaign_service::{CampaignMutation, CampaignQuery},
+    nation_service::NationQuery,
+};
 use axum::{
     debug_handler,
     extract::{Json, Path, State},
@@ -51,7 +54,7 @@ pub async fn run_battle(
 
     //println!("{:?}", body);
     let (east_nation, east_nation_armies) =
-        Query::get_nation_with_nation_armies(&state.conn, body.east_competitor).await?;
+        NationQuery::get_nation_with_nation_armies(&state.conn, body.east_competitor).await?;
 
     let east_tuple: (Nation, Vec<NationArmy>) = (
         east_nation.clone().into(),
@@ -62,7 +65,7 @@ pub async fn run_battle(
     );
 
     let (west_nation, west_nation_armies) =
-        Query::get_nation_with_nation_armies(&state.conn, body.west_competitor).await?;
+        NationQuery::get_nation_with_nation_armies(&state.conn, body.west_competitor).await?;
 
     let west_tuple: (Nation, Vec<NationArmy>) = (
         west_nation.clone().into(),
@@ -90,8 +93,7 @@ pub async fn run_battle(
     let end_battle_payload = do_battle(game_defaults, competitors)?;
 
     let campaign_level =
-        armies_of_avalon_service::Query::get_campaign_level_by_level_number(&state.conn, level)
-            .await?;
+        CampaignQuery::get_campaign_level_by_level_number(&state.conn, level).await?;
 
     let completed_level = end_battle_payload.battle_result.winner == Some(Belligerent::EasternArmy);
     let winner = if completed_level {
@@ -100,20 +102,19 @@ pub async fn run_battle(
         west_nation.id
     };
 
-    let campaign_nation_level_result =
-        armies_of_avalon_service::Mutation::upsert_nation_campaign_level(
-            &state.conn,
-            east_nation.id,
-            campaign_level.id,
-            east_nation.name,
-            level,
-            completed_level,
-        )
-        .await?;
+    let campaign_nation_level_result = CampaignMutation::upsert_nation_campaign_level(
+        &state.conn,
+        east_nation.id,
+        campaign_level.id,
+        east_nation.name,
+        level,
+        completed_level,
+    )
+    .await?;
 
     println!("{campaign_nation_level_result:?}");
 
-    let battle_record_result = armies_of_avalon_service::Mutation::insert_battle_record(
+    let battle_record_result = BattleMutation::insert_battle_record(
         &state.conn,
         east_nation.id,
         west_nation.id,

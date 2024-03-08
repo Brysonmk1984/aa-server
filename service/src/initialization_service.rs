@@ -1,12 +1,9 @@
-// use crate::Query;
-
-use entity::weapon_armor::{self, Entity as WeaponArmor, Model as WeaponArmorModel};
+use entity::weapon_armor::{Entity as WeaponArmor, Model as WeaponArmorModel};
 
 use sea_orm::{DbConn, DbErr, EntityTrait};
 
-use crate::Query;
-
-impl Query {
+pub struct WeaponArmorQuery;
+impl WeaponArmorQuery {
     pub async fn get_weapon_armor_reduction_values(
         db: &DbConn,
     ) -> Result<Vec<WeaponArmorModel>, DbErr> {

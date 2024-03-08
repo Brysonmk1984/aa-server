@@ -1,5 +1,6 @@
 use crate::{utils::error::AppError, AppState};
-use armies_of_avalon_service::{Auth0UserPart, Mutation};
+
+use armies_of_avalon_service::user_service::{Auth0UserPart, UserMutation};
 use axum::{debug_handler, extract::State, Json};
 use entity::users::Model as UsersModel;
 
@@ -17,6 +18,6 @@ pub async fn create_or_update_user(
         email_verified: body.email_verified,
         auth0_sub: body.auth0_sub.to_string(),
     };
-    let user = Mutation::insert_or_return_user(&state.conn, partial_user).await?;
+    let user = UserMutation::insert_or_return_user(&state.conn, partial_user).await?;
     Ok(Json(user))
 }

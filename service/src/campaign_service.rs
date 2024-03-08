@@ -1,21 +1,23 @@
-use crate::Mutation;
-use crate::Query;
-
-use entity::campaign_levels::{self, Entity as CampaignLevel, Model as CampaignLevelModel};
-use entity::nation_campaign_levels::{
-    self, ActiveModel, Entity as NationCampaignLevel, Model as NationCampaignLevelModel,
+use ::entity::campaign_levels::{self, Entity as CampaignLevels, Model as CampaignLevelsModel};
+use ::entity::nation_armies::{self, Entity as NationArmies, Model as NationArmiesModel};
+use ::entity::nation_campaign_levels::{
+    self, Entity as NationCampaignLevels, Model as NationCampaignLevels,
 };
-use sea_orm::{
-    ActiveModelTrait, ActiveValue::NotSet, ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter,
-    Set, TryIntoModel,
-};
+use ::entity::nations::{self, Entity as Nations, Model as NationsModel};
+use sea_orm::{ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter, Set};
 
-impl Query {
+pub struct CampaignQuery;
+impl CampaignQuery {
+    pub async fn get_all_campaign_levels(db: &DbConn) -> Result<Vec<CampaignLevelsModel>, DbErr> {
+        let campaign_levels: Vec<CampaignLevelsModel> = CampaignLevels::find().all(db).await?;
+        Ok(campaign_levels)
+    }
+
     pub async fn get_campaign_level_by_level_number(
         db: &DbConn,
         level_number: i32,
-    ) -> Result<CampaignLevelModel, DbErr> {
-        let campaign_level_option = CampaignLevel::find()
+    ) -> Result<CampaignLevelsModel, DbErr> {
+        let campaign_level_option = CampaignLevels::find()
             .filter(campaign_levels::Column::Level.eq(level_number))
             .one(db)
             .await?;
@@ -28,9 +30,57 @@ impl Query {
             )));
         }
     }
+
+    pub async fn get_campaign_level_id_by_level_number(
+        db: &DbConn,
+        level: i32,
+    ) -> Result<i32, DbErr> {
+        let campaign_levels: Result<std::option::Option<CampaignLevelsModel>, DbErr> =
+            CampaignLevels::find()
+                .filter(campaign_levels::Column::Level.eq(level))
+                .one(db)
+                .await;
+
+        let campaign_level: CampaignLevelsModel = campaign_levels.unwrap().unwrap();
+        Ok(campaign_level.id)
+    }
+
+    pub async fn get_campaign_nation_with_nation_armies_by_nation_id(
+        db: &DbConn,
+        level: i32,
+    ) -> Result<(NationsModel, Vec<NationArmiesModel>), DbErr> {
+        println!("{level}");
+        let campaign_level = CampaignLevels::find()
+            .filter(campaign_levels::Column::Level.eq(level))
+            .one(db)
+            .await?;
+        if campaign_level.is_none() {
+            panic!("No campaign level: {}", level)
+        }
+        let level_nation_id = campaign_level.unwrap().nation_id.clone();
+        let nation = Nations::find()
+            .filter(nations::Column::Id.eq(level_nation_id))
+            .one(db)
+            .await?;
+        println!("{nation:?}");
+        if nation.is_none() {
+            panic!("No nation with id: {}", level_nation_id)
+        }
+
+        let nation_armies = NationArmies::find()
+            .filter(nation_armies::Column::NationId.eq(level_nation_id))
+            .all(db)
+            .await;
+        println!("{nation_armies:?}");
+        match nation_armies {
+            Ok(n_armies) => Ok((nation.unwrap(), n_armies)),
+            Err(_) => Ok((nation.unwrap(), vec![])),
+        }
+    }
 }
 
-impl Mutation {
+pub struct CampaignMutation;
+impl CampaignMutation {
     pub async fn upsert_nation_campaign_level(
         db: &DbConn,
         nation_id: i32,
@@ -46,7 +96,7 @@ impl Mutation {
             .await?;
         println!("{existing_level_by_nation_id:?}");
 
-        let mut result;
+        let result;
         match existing_level_by_nation_id {
             // Update existing record
             Some(nation_cl) => {

@@ -7,12 +7,13 @@ mod utils;
 
 use aa_battles::types::{Army, ArmyName};
 use aa_battles::util::create_hash_of_defaults;
+use armies_of_avalon_service::army_service::ArmyQuery;
 use armies_of_avalon_service::cron_service::initialize_scheduler;
-use armies_of_avalon_service::sea_orm::{Database, DatabaseConnection};
-use armies_of_avalon_service::Query;
+use armies_of_avalon_service::initialization_service::WeaponArmorQuery;
+
 use axum::{serve, Router};
 
-use migration::sea_orm::prelude::Decimal;
+use migration::sea_orm::{Database, DatabaseConnection};
 use migration::{Migrator, MigratorTrait};
 
 use std::collections::HashMap;
@@ -100,7 +101,7 @@ pub fn main() {
  */
 pub async fn set_weapon_armor_hash(state: &AppState) -> anyhow::Result<()> {
     let weapon_armor_result: Vec<entity::weapon_armor::Model> =
-        Query::get_weapon_armor_reduction_values(&state.conn).await?;
+        WeaponArmorQuery::get_weapon_armor_reduction_values(&state.conn).await?;
 
     let mut weapon_armor_hashmap: HashMap<String, f64> = HashMap::new();
 
@@ -117,7 +118,7 @@ pub async fn set_weapon_armor_hash(state: &AppState) -> anyhow::Result<()> {
 pub async fn initialize_defaults_to_memory(state: &AppState) -> anyhow::Result<()> {
     set_weapon_armor_hash(state).await?;
 
-    let result = Query::get_all_armies(&state.conn).await?;
+    let result = ArmyQuery::get_all_armies(&state.conn).await?;
     let mut army_defaults: Vec<Army> = result
         .iter()
         .map(|army| army.clone().into())
