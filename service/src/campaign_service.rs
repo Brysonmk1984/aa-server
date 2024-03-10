@@ -1,10 +1,9 @@
 use ::entity::campaign_levels::{self, Entity as CampaignLevels, Model as CampaignLevelsModel};
 use ::entity::nation_armies::{self, Entity as NationArmies, Model as NationArmiesModel};
-use ::entity::nation_campaign_levels::{
-    self, Entity as NationCampaignLevels, Model as NationCampaignLevels,
-};
+use ::entity::nation_campaign_levels::{self, Model as NationCampaignLevelModel};
 use ::entity::nations::{self, Entity as Nations, Model as NationsModel};
-use sea_orm::{ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter, Set};
+use entity::nation_campaign_levels::Entity as NationCampaignLevels;
+use sea_orm::{ActiveModelTrait, ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter, Set};
 
 pub struct CampaignQuery;
 impl CampaignQuery {
@@ -89,7 +88,7 @@ impl CampaignMutation {
         level_number: i32,
         completed: bool,
     ) -> Result<NationCampaignLevelModel, DbErr> {
-        let existing_level_by_nation_id = NationCampaignLevel::find()
+        let existing_level_by_nation_id = NationCampaignLevels::find()
             .filter(nation_campaign_levels::Column::NationId.eq(nation_id))
             .filter(nation_campaign_levels::Column::Level.eq(level_number))
             .one(db)
