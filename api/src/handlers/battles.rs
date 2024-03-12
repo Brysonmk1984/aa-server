@@ -123,7 +123,7 @@ pub async fn run_battle(
     )
     .await?;
 
-    println!("{battle_record_result:?}");
+    println!("{:?}", end_battle_payload.battle_result);
 
     let setting = BattlesModel {
         nation_id_east: east_nation.id,
