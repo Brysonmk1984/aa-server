@@ -35,7 +35,7 @@ pub async fn buy_army(
     println!("{nation_id} {army_id}");
 
     // todo!("Verify that the user from the auth token is the one buying the army");
-
+    println!("ADS {nation_id} {army_id}");
     let result = NationMutation::buy_army(&state.conn, nation_id, army_id).await?;
 
     Ok(Json(result))

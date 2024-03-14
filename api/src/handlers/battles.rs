@@ -123,6 +123,16 @@ pub async fn run_battle(
     )
     .await?;
 
+    // let EndBattlePayload {
+    //     battle_result,
+    //     headline,
+    //     events,
+    //     end_state,
+    //     outcome,
+    // } = do_battle(army_defaults, competitors)?;
+
+    // NEED TO adjust nation_army_counts
+
     println!("{:?}", end_battle_payload.battle_result);
 
     let setting = BattlesModel {

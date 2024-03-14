@@ -185,18 +185,37 @@ impl NationMutation {
 
             let mut nation_to_be_updated: nations::ActiveModel = nation_option.unwrap().into();
             nation_to_be_updated.gold = Set(nation_gold - army_cost);
-            let pear: nations::Model = nation_to_be_updated.update(db).await?;
+            nation_to_be_updated.update(db).await?;
 
-            let matching_army = army_option.unwrap();
+            let matching_army_template = army_option.unwrap();
 
-            let nation_army_to_be_inserted = nation_armies::ActiveModel {
-                nation_id: Set(nation_id),
-                army_id: Set(army_id),
-                count: Set(matching_army.count),
-                army_name: Set(matching_army.name),
-                ..Default::default()
+            let existing_army_of_same_type = NationArmies::find()
+                .filter(nation_armies::Column::ArmyId.eq(army_id))
+                .one(db)
+                .await?;
+
+            let mut nation_army_to_be_inserted;
+
+            match existing_army_of_same_type {
+                Some(nation_army) => {
+                    println!("'INNNN {nation_army:?}");
+                    nation_army_to_be_inserted = nation_armies::ActiveModel {
+                        count: Set(nation_army.count + matching_army_template.count),
+                        ..nation_army.into()
+                    };
+                }
+                None => {
+                    println!("'IN NONE");
+                    nation_army_to_be_inserted = nation_armies::ActiveModel {
+                        nation_id: Set(nation_id),
+                        army_id: Set(army_id),
+                        count: Set(matching_army_template.count),
+                        army_name: Set(matching_army_template.name),
+                        ..Default::default()
+                    };
+                }
             };
-
+            println!("{nation_army_to_be_inserted:?}");
             let result = nation_army_to_be_inserted.insert(db).await?;
 
             Ok(result)
