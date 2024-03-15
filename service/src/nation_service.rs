@@ -191,34 +191,42 @@ impl NationMutation {
 
             let existing_army_of_same_type = NationArmies::find()
                 .filter(nation_armies::Column::ArmyId.eq(army_id))
+                .filter(nation_armies::Column::NationId.eq(nation_id))
                 .one(db)
                 .await?;
 
-            let mut nation_army_to_be_inserted;
+            let mut result;
 
             match existing_army_of_same_type {
                 Some(nation_army) => {
-                    println!("'INNNN {nation_army:?}");
-                    nation_army_to_be_inserted = nation_armies::ActiveModel {
+                    let nation_army_to_be_inserted = nation_armies::ActiveModel {
                         count: Set(nation_army.count + matching_army_template.count),
                         ..nation_army.into()
                     };
+                    result = nation_army_to_be_inserted.update(db).await;
                 }
                 None => {
                     println!("'IN NONE");
-                    nation_army_to_be_inserted = nation_armies::ActiveModel {
+                    let nation_army_to_be_inserted = nation_armies::ActiveModel {
                         nation_id: Set(nation_id),
                         army_id: Set(army_id),
                         count: Set(matching_army_template.count),
                         army_name: Set(matching_army_template.name),
                         ..Default::default()
                     };
+                    result = nation_army_to_be_inserted.insert(db).await;
                 }
             };
-            println!("{nation_army_to_be_inserted:?}");
-            let result = nation_army_to_be_inserted.insert(db).await?;
 
-            Ok(result)
+            println!("{result:?}");
+
+            match result {
+                Ok(model) => Ok(model),
+                Err(e) => {
+                    dbg!(&e);
+                    Err(e)
+                }
+            }
         }
     }
 }
