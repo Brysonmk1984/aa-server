@@ -77,13 +77,6 @@ pub async fn run_battle(
     );
 
     let competitors = (east_tuple, west_tuple);
-    // let EndBattlePayload {
-    //     battle_result,
-    //     headline,
-    //     events,
-    //     end_state,
-    //     outcome,
-    // } = do_battle(army_defaults, competitors)?;
 
     let game_defaults = GameDefaults {
         weapons_vs_armor: WEAPON_ARMOR_CELL.get().unwrap(),
@@ -124,22 +117,13 @@ pub async fn run_battle(
     )
     .await?;
 
-    // let EndBattlePayload {
-    //     battle_result,
-    //     headline,
-    //     events,
-    //     end_state,
-    //     outcome,
-    // } = do_battle(army_defaults, competitors)?;
-
-    // NEED TO adjust nation_army_counts
-
     println!("{:?}", end_battle_payload.battle_result.eastern_battalions);
 
     let cloned_armies = end_battle_payload.battle_result.eastern_battalions.clone();
 
-    let na = competitors.0 .1.clone();
-    let cloned_armies_as_models: Vec<NationArmiesModel> = na
+    // TODO: When we support non-campaign battles, need to also update the western nation's counts
+    let eastern_battalions = competitors.0 .1;
+    let vec_post_battle_eastern_army_values: Vec<NationArmiesModel> = eastern_battalions
         .iter()
         .map(|nation_army| {
             let count = cloned_armies
@@ -155,16 +139,19 @@ pub async fn run_battle(
             NationArmiesModel {
                 count,
                 id: nation_army.id,
-                nation_id: nation_army.nation_id,
                 army_id: nation_army.army_id,
-                army_name: nation_army.army_name.to_string(),
                 ..Default::default()
             }
         })
         .collect();
-    println!("cloned_armies_as_models::: {cloned_armies_as_models:?}");
-    NationMutation::update_army_counts(east_nation.id, cloned_armies_as_models, &state.conn)
-        .await?;
+    println!("vec_post_battle_nation_army_values: {vec_post_battle_eastern_army_values:?}");
+
+    NationMutation::adjust_nation_army_counts(
+        east_nation.id,
+        vec_post_battle_eastern_army_values,
+        &state.conn,
+    )
+    .await?;
 
     let setting = BattlesModel {
         nation_id_east: east_nation.id,
@@ -172,13 +159,6 @@ pub async fn run_battle(
         nation_campaign_level_id: Some(campaign_nation_level_result.id),
         ..Default::default()
     };
-
-    // let battle_stats = BattleStats {
-    //     setting,
-    //     outcome: end_battle_payload,
-    // };
-
-    //println!("{battle_stats:?}");
 
     Ok(Json(end_battle_payload))
 }
