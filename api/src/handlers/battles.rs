@@ -1,12 +1,13 @@
 #![allow(warnings)]
 use std::{collections::HashMap, env};
 
-use aa_battles::types::Belligerent;
+use ::entity::nation_armies::{self, Entity as NationArmies, Model as NationArmiesModel};
+use aa_battles::types::{ArmyName, Belligerent, EndingBattalionStats};
 use aa_battles::EndBattlePayload;
 use armies_of_avalon_service::{
     battles_service::{self, BattleMutation},
     campaign_service::{CampaignMutation, CampaignQuery},
-    nation_service::NationQuery,
+    nation_service::{NationMutation, NationQuery},
 };
 use axum::{
     debug_handler,
@@ -14,10 +15,10 @@ use axum::{
     http::StatusCode,
     Extension,
 };
+use entity::battles::Model as BattlesModel;
+use entity::nation_armies::Model;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-
-use entity::battles::Model as BattlesModel;
 
 use crate::handlers;
 use crate::utils::error::AppError;
@@ -90,7 +91,7 @@ pub async fn run_battle(
         environment: env::var("ENVIRONMENT").unwrap(),
     };
 
-    let end_battle_payload = do_battle(game_defaults, competitors)?;
+    let end_battle_payload = do_battle(game_defaults, competitors.clone())?;
 
     let campaign_level =
         CampaignQuery::get_campaign_level_by_level_number(&state.conn, level).await?;
@@ -133,7 +134,37 @@ pub async fn run_battle(
 
     // NEED TO adjust nation_army_counts
 
-    println!("{:?}", end_battle_payload.battle_result);
+    println!("{:?}", end_battle_payload.battle_result.eastern_battalions);
+
+    let cloned_armies = end_battle_payload.battle_result.eastern_battalions.clone();
+
+    let na = competitors.0 .1.clone();
+    let cloned_armies_as_models: Vec<NationArmiesModel> = na
+        .iter()
+        .map(|nation_army| {
+            let count = cloned_armies
+                .iter()
+                .fold(nation_army.count, |mut count, battalion| {
+                    if (battalion.name == nation_army.army_name) {
+                        battalion.count
+                    } else {
+                        count
+                    }
+                });
+
+            NationArmiesModel {
+                count,
+                id: nation_army.id,
+                nation_id: nation_army.nation_id,
+                army_id: nation_army.army_id,
+                army_name: nation_army.army_name.to_string(),
+                ..Default::default()
+            }
+        })
+        .collect();
+    println!("cloned_armies_as_models::: {cloned_armies_as_models:?}");
+    NationMutation::update_army_counts(east_nation.id, cloned_armies_as_models, &state.conn)
+        .await?;
 
     let setting = BattlesModel {
         nation_id_east: east_nation.id,

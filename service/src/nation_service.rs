@@ -1,6 +1,7 @@
 #![allow(warnings)]
 
 use sea_orm;
+use std::collections::HashMap;
 use std::fmt;
 
 use ::entity::armies::{self, Entity as Armies, Model};
@@ -12,6 +13,8 @@ use sea_orm::sea_query::OnConflict;
 use sea_orm::*;
 use serde::Deserialize;
 use strum::EnumString;
+
+use crate::user_service;
 
 #[derive(Deserialize)]
 pub struct GetAllNationsParams {
@@ -229,4 +232,94 @@ impl NationMutation {
             }
         }
     }
+
+    pub async fn update_army_counts(
+        nation_id: i32,
+        post_battle_nation_armies: Vec<NationArmiesModel>,
+        db: &DbConn,
+    ) -> Result<(), DbErr> {
+        println!("UPDATESTESTES");
+        // 1. Create one vecs, one to hold ids to delete, and create a hashmap that holds ids to update and count
+        let mut update_hash_map: HashMap<i32, i32> = HashMap::new();
+        let mut delete_vec = vec![];
+
+        // 2. Get all armies belonging to a nation
+        let db_nation_armies = NationArmies::find()
+            .filter(nation_armies::Column::NationId.eq(nation_id))
+            .all(db)
+            .await?;
+
+        // 3. loop through each army in 'armies' vec
+
+        post_battle_nation_armies.iter().for_each(|nation_army| {
+            println!("{nation_army:?}");
+
+            // 4. Compare count in DB to param value
+            if (nation_army.count <= 0) {
+                // 5. If count is zero, push id into delete array
+                delete_vec.push(nation_army.id.clone());
+            } else {
+                // 6. If lower than db value AND gt zero, push nation id and count into map
+
+                db_nation_armies.iter().for_each(|db_na| {
+                    if (db_na.army_id == nation_army.army_id) {
+                        if (nation_army.count < db_na.count) {
+                            update_hash_map.insert(nation_army.id, nation_army.count);
+                        }
+                    }
+                });
+            }
+        });
+
+        println!("delete_vec: {delete_vec:?}");
+        // 7. Delete dead armies
+        let delete_res: DeleteResult = NationArmies::delete_many()
+            .filter(nation_armies::Column::Id.is_in(delete_vec))
+            .exec(db)
+            .await?;
+        println!("delete_res: {delete_res:?}");
+
+        // 8. Update partial armies
+        let values = values_to_update(update_hash_map);
+        let sql = format!(
+            "
+            UPDATE nation_armies as nation_armies_table set
+                id = temp.id,
+                count = temp.count
+            FROM (VALUES
+               {values}
+            ) as temp(id, count)
+            WHERE nation_armies_table.id =  temp.id;
+        "
+        );
+
+        let statement = Statement::from_string(sea_orm::DatabaseBackend::Postgres, sql.to_owned());
+
+        let exec_res = db.execute_unprepared(sql.as_str()).await;
+
+        println!("exec_res!!! ::: {exec_res:?}");
+
+        Ok(())
+    }
+}
+
+/**
+ * Needed to format the raw SQL values
+ */
+fn values_to_update(hash_map: HashMap<i32, i32>) -> String {
+    let mut hash_map_count = hash_map.len();
+
+    let vec_of_hash: Vec<String> = hash_map
+        .into_iter()
+        .enumerate()
+        .map(|(index, (k, v))| {
+            if ((index + 1) == hash_map_count) {
+                format!("({k},{v})")
+            } else {
+                format!("({k},{v}),")
+            }
+        })
+        .collect();
+
+    vec_of_hash.join("")
 }
