@@ -60,7 +60,7 @@ async fn start() -> anyhow::Result<()> {
     let state = AppState { conn };
 
     initialize_defaults_to_memory(&state).await.unwrap();
-    //initialize_scheduler().await?;
+    initialize_scheduler().await?;
 
     let app: Router = Router::new()
         .nest("/battles", battles_routes(&state))

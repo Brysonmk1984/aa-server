@@ -233,6 +233,41 @@ impl NationMutation {
         }
     }
 
+    pub async fn update_gold_from_income_timer() {
+        // 1. Get required data from DB
+        // get all non-campaign nations from db - nations table
+        // get highest campaign level completed - nation_campaign_level table (or should I start saving this on the nation?)
+        // // create a custom join and a custom struct with the new data
+        // // https://www.sea-ql.org/SeaORM/docs/advanced-query/custom-joins/
+        // // https://www.sea-ql.org/SeaORM/docs/advanced-query/custom-select/#handling-custom-selects
+        // 2. loop through each nation w/ details
+        // Calculate their total income by taking the base (100) plus (10) for each campaign level completed
+        // create new hash of nation id to income
+        // do a bulk update from hash
+
+        println!("INCOME timer! ");
+    }
+
+    /*
+     * Note - Upkeep should run right after income, otherwise they can spend before paying upkeep
+     */
+    pub async fn update_gold_from_upkeep_timer() {
+        // 1. Get required data from DB
+        // // get all non-campaign nations from db - nations table
+        // // get total nation_army army count - nation_armies table
+        // // create a custom join and a custom struct with the new data
+        // 2. loop through each nation w/ details
+        // // Calculate their upkeep by seeing which upkeep bracket they fall under
+        // // // none - below 10k soldiers - 0 gold
+        // // // low - over 10k soldiers - 25 gold
+        // // // medium - over 50k soldiers - 75 gold
+        // // // high - over 90k soldiers - 150 gold
+        // // subtract upkeep amount from nation's gold
+        // create new hash of nation id to income
+        // do a bulk update from hash
+        println!("UPKEEP timer! ");
+    }
+
     pub async fn adjust_nation_army_counts(
         nation_id: i32,
         post_battle_nation_armies: Vec<NationArmiesModel>,
