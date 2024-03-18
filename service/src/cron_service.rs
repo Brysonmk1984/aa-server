@@ -1,6 +1,6 @@
-use tokio_cron_scheduler::{Job, JobScheduler};
-
 use crate::nation_service::NationMutation;
+use log::{error, info};
+use tokio_cron_scheduler::{Job, JobScheduler};
 
 // every second
 // 0 * * * * * *" never runs
@@ -40,25 +40,46 @@ pub async fn initialize_scheduler() -> anyhow::Result<()> {
 
     // Income Job - Every 1 Minute
     sched
-        .add(Job::new("0 1 * * * * *", |_uuid, _l| {
-            println!("I run every minute");
+        .add(Job::new_async("0/2 * * * * * *", |_uuid, _l| {
+            Box::pin(async move {
+                println!("I run every minute");
 
-            // calculate income
-            NationMutation::update_gold_from_income_timer().await?;
+                // calculate income
+                let update_future = NationMutation::update_gold_from_income_timer().await;
+
+                match update_future {
+                    Ok(_) => {
+                        println!("");
+                        info!("Gold update job 'update_gold_from_income_timer' was successful!")
+                    }
+                    Err(error) => {
+                       print!("{error}");
+                        error!("Something went wrong in the job 'update_gold_from_income_timer' : {error}");
+                    }
+                }
+            })
         })?)
         .await?;
 
     // Upkeep Job - Every 5 Minute
     sched
-        .add(Job::new("0 0/5 * * * * *", |_uuid, _l| {
-            println!("I run every 5 minutes");
-            NationMutation::update_gold_from_upkeep_timer().await?;
-            //calculate upkeep
+        .add(Job::new_async("0 0/5 * * * * *", |_uuid, _l| {
+            Box::pin(async move {
+                println!("I run every 5 minutes");
+                let update_future = NationMutation::update_gold_from_upkeep_timer().await;
+
+                match update_future {
+                    Ok(_) => {
+                        info!("Gold update job 'update_gold_from_income_timer' was successful!")
+                    }
+                    Err(error) => {
+                        // print!("{error}");
+                        error!("Something went wrong in the job 'update_gold_from_upkeep_timer' : {error}");
+                    }
+                }
+            })
         })?)
         .await?;
-
-    //Wait while the jobs run
-    //tokio::time::sleep(Duration::from_secs(100)).await;
     println!("Scheduler Initialized");
     Ok(())
 }

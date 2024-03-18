@@ -1,5 +1,6 @@
 #![allow(warnings)]
 
+use anyhow::Result;
 use sea_orm;
 use std::collections::HashMap;
 use std::fmt;
@@ -233,7 +234,7 @@ impl NationMutation {
         }
     }
 
-    pub async fn update_gold_from_income_timer() {
+    pub async fn update_gold_from_income_timer() -> Result<(), DbErr> {
         // 1. Get required data from DB
         // get all non-campaign nations from db - nations table
         // get highest campaign level completed - nation_campaign_level table (or should I start saving this on the nation?)
@@ -246,12 +247,13 @@ impl NationMutation {
         // do a bulk update from hash
 
         println!("INCOME timer! ");
+        Ok(())
     }
 
     /*
      * Note - Upkeep should run right after income, otherwise they can spend before paying upkeep
      */
-    pub async fn update_gold_from_upkeep_timer() {
+    pub async fn update_gold_from_upkeep_timer() -> Result<(), DbErr> {
         // 1. Get required data from DB
         // // get all non-campaign nations from db - nations table
         // // get total nation_army army count - nation_armies table
@@ -266,6 +268,7 @@ impl NationMutation {
         // create new hash of nation id to income
         // do a bulk update from hash
         println!("UPKEEP timer! ");
+        Ok(())
     }
 
     pub async fn adjust_nation_army_counts(
