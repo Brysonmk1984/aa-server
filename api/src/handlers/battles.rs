@@ -53,7 +53,7 @@ pub async fn run_battle(
 
     // todo!("Verify that the nation retrieved belongs to the user from the auth token");
 
-    //println!("{:?}", body);
+    println!("{:?}", body);
     let (east_nation, east_nation_armies) =
         NationQuery::get_nation_with_nation_armies(&state.conn, body.east_competitor).await?;
 
@@ -64,7 +64,7 @@ pub async fn run_battle(
             .map(|army| army.clone().into())
             .collect::<Vec<NationArmy>>(),
     );
-
+    println!("east_tupleeast_tuple - {east_tuple:?}");
     let (west_nation, west_nation_armies) =
         NationQuery::get_nation_with_nation_armies(&state.conn, body.west_competitor).await?;
 

@@ -119,6 +119,151 @@ impl NationQuery {
 pub struct NationMutation;
 
 impl NationMutation {
+    pub async fn update_gold_from_income_timer(db: &DbConn) -> Result<(), DbErr> {
+        let sql = "
+            SELECT nations.id, name, gold, MAX(level) AS max_level
+            FROM nations 
+            INNER JOIN nation_campaign_levels
+                ON nations.id = nation_campaign_levels.nation_id
+            WHERE completed = TRUE
+            GROUP BY nations.id;
+        ";
+
+        let statement = Statement::from_string(sea_orm::DatabaseBackend::Postgres, sql.to_owned());
+        let query_res_vec = db.query_all(statement).await;
+
+        let res = query_res_vec.unwrap();
+        let update_hash_map = res.iter().fold(HashMap::new(), |mut acc, cur| {
+            let id = cur.try_get::<i32>("", "id").unwrap();
+            let gold = cur.try_get::<i32>("", "gold").unwrap();
+            let level = cur.try_get::<i32>("", "max_level").unwrap();
+            let updated_gold = gold + 100 + (level * 10);
+            acc.insert(id, updated_gold);
+            acc
+        });
+
+        let hash_map_count = update_hash_map.len();
+        let vec_of_hash: Vec<String> = update_hash_map
+            .into_iter()
+            .enumerate()
+            .map(|(index, (k, v))| {
+                if ((index + 1) == hash_map_count) {
+                    format!("({k},{v})")
+                } else {
+                    format!("({k},{v}),")
+                }
+            })
+            .collect();
+
+        let values = vec_of_hash.join("");
+
+        let sql = format!(
+            "
+    UPDATE nations set
+        id = temp.id,
+        gold = temp.gold
+    FROM (VALUES
+       {values}
+    ) as temp(id, gold)
+    WHERE nations.id =  temp.id;
+"
+        );
+        let statement = Statement::from_string(sea_orm::DatabaseBackend::Postgres, sql.to_owned());
+
+        let update_res = db.execute_unprepared(sql.as_str()).await;
+        println!("{update_res:?}");
+        Ok(())
+    }
+
+    pub async fn update_gold_from_upkeep_timer(db: &DbConn) -> Result<(), DbErr> {
+        // 1. Get required data from DB
+        // // get all non-campaign nations from db - nations table
+        // // get total nation_army army count - nation_armies table
+        // // create a custom join and a custom struct with the new data
+
+        let sql = "
+            SELECT nations.id, gold, SUM(nation_armies.count) as total_army_count 
+            FROM nations
+            JOIN nation_armies
+                ON nations.id = nation_armies.nation_id
+            WHERE nations.is_npc = FALSE
+            GROUP BY nations.id;
+        ";
+
+        let statement = Statement::from_string(sea_orm::DatabaseBackend::Postgres, sql.to_owned());
+        let query_res_vec = db.query_all(statement).await;
+
+        let res = query_res_vec.unwrap();
+
+        // 2. loop through each nation w/ details
+        // // Calculate their upkeep by seeing which upkeep bracket they fall under
+        // // // none - below 10k soldiers - 0 gold
+        // // // low - over 10k soldiers - 25 gold
+        // // // medium - over 50k soldiers - 75 gold
+        // // // high - over 90k soldiers - 150 gold
+        // // subtract upkeep amount from nation's gold
+        // create new hash of nation id to income
+        // do a bulk update from hash
+
+        let update_hash_map = res.iter().fold(HashMap::new(), |mut acc, cur| {
+            let id = cur.try_get::<i32>("", "id").unwrap();
+            let gold = cur.try_get::<i32>("", "gold").unwrap();
+            let total_army_count = cur.try_get::<i64>("", "total_army_count").unwrap();
+
+            let upkeep_cost = if (total_army_count > 90_000) {
+                150
+            } else if (total_army_count > 50_000) {
+                75
+            } else if (total_army_count > 10_000) {
+                25
+            } else {
+                0
+            };
+
+            let potentially_negative_gold = gold - upkeep_cost;
+            let updated_gold = if (potentially_negative_gold < 0) {
+                0
+            } else {
+                potentially_negative_gold
+            };
+            acc.insert(id, updated_gold);
+            acc
+        });
+
+        let hash_map_count = update_hash_map.len();
+        let vec_of_hash: Vec<String> = update_hash_map
+            .into_iter()
+            .enumerate()
+            .map(|(index, (k, v))| {
+                if ((index + 1) == hash_map_count) {
+                    format!("({k},{v})")
+                } else {
+                    format!("({k},{v}),")
+                }
+            })
+            .collect();
+
+        let values = vec_of_hash.join("");
+
+        let sql = format!(
+            "
+    UPDATE nations set
+        id = temp.id,
+        gold = temp.gold
+    FROM (VALUES
+       {values}
+    ) as temp(id, gold)
+    WHERE nations.id =  temp.id;
+"
+        );
+        let statement = Statement::from_string(sea_orm::DatabaseBackend::Postgres, sql.to_owned());
+
+        let update_res = db.execute_unprepared(sql.as_str()).await;
+
+        println!("UPKEEP timer! ");
+        Ok(())
+    }
+
     pub async fn buy_army(
         db: &DbConn,
         nation_id: i32,
@@ -149,44 +294,6 @@ impl NationMutation {
             let error_message = format!("Nation does not have enough Gold!");
             return Err(DbErr::Custom(error_message));
         } else {
-            // Now we create a transaction that:
-            // first subtracts the gold from the nation
-            // second creates the nation_army
-
-            // <Fn, A, B> -> Result<A, B>
-            // let transaction_result = db
-            //     .transaction::<_, (), DbErr>(|txn| {
-            //         Box::pin(async move {
-            //             nations::ActiveModel {
-            //                 gold: Set(nation_gold - army_cost),
-            //                 ..Default::default()
-            //             }
-            //             .save(txn)
-            //             .await?;
-
-            //             let matching_army = army_option.unwrap();
-
-            //             let nation_army_to_be_inserted = nation_armies::ActiveModel {
-            //                 nation_id: Set(nation_id),
-            //                 army_id: Set(army_id),
-            //                 count: Set(matching_army.count),
-            //                 army_name: Set(matching_army.name),
-            //                 ..Default::default()
-            //             };
-
-            //             nation_army_to_be_inserted.insert(db).await?;
-
-            //             Ok(())
-            //         })
-            //     })
-            //     .await;
-
-            // match transaction_result {
-            //     Ok(_) => Ok(()),
-
-            //     Err(error) => Err(anyhow!(error)),
-            // }
-
             let mut nation_to_be_updated: nations::ActiveModel = nation_option.unwrap().into();
             nation_to_be_updated.gold = Set(nation_gold - army_cost);
             nation_to_be_updated.update(db).await?;
@@ -232,43 +339,6 @@ impl NationMutation {
                 }
             }
         }
-    }
-
-    pub async fn update_gold_from_income_timer() -> Result<(), DbErr> {
-        // 1. Get required data from DB
-        // get all non-campaign nations from db - nations table
-        // get highest campaign level completed - nation_campaign_level table (or should I start saving this on the nation?)
-        // // create a custom join and a custom struct with the new data
-        // // https://www.sea-ql.org/SeaORM/docs/advanced-query/custom-joins/
-        // // https://www.sea-ql.org/SeaORM/docs/advanced-query/custom-select/#handling-custom-selects
-        // 2. loop through each nation w/ details
-        // Calculate their total income by taking the base (100) plus (10) for each campaign level completed
-        // create new hash of nation id to income
-        // do a bulk update from hash
-
-        println!("INCOME timer! ");
-        Ok(())
-    }
-
-    /*
-     * Note - Upkeep should run right after income, otherwise they can spend before paying upkeep
-     */
-    pub async fn update_gold_from_upkeep_timer() -> Result<(), DbErr> {
-        // 1. Get required data from DB
-        // // get all non-campaign nations from db - nations table
-        // // get total nation_army army count - nation_armies table
-        // // create a custom join and a custom struct with the new data
-        // 2. loop through each nation w/ details
-        // // Calculate their upkeep by seeing which upkeep bracket they fall under
-        // // // none - below 10k soldiers - 0 gold
-        // // // low - over 10k soldiers - 25 gold
-        // // // medium - over 50k soldiers - 75 gold
-        // // // high - over 90k soldiers - 150 gold
-        // // subtract upkeep amount from nation's gold
-        // create new hash of nation id to income
-        // do a bulk update from hash
-        println!("UPKEEP timer! ");
-        Ok(())
     }
 
     pub async fn adjust_nation_army_counts(

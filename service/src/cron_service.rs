@@ -1,5 +1,6 @@
 use crate::nation_service::NationMutation;
 use log::{error, info};
+use sea_orm::DbConn;
 use tokio_cron_scheduler::{Job, JobScheduler};
 
 // every second
@@ -32,20 +33,21 @@ use tokio_cron_scheduler::{Job, JobScheduler};
 // every hour
 // "0 1 * * * * *" // every hour on the first minute of the hour - confirmed!
 
-pub async fn initialize_scheduler() -> anyhow::Result<()> {
+pub async fn initialize_scheduler(db: &DbConn) -> anyhow::Result<()> {
     let sched = JobScheduler::new().await?;
 
     // Start the scheduler
     sched.start().await?;
-
+    let cloned = db.clone();
     // Income Job - Every 1 Minute
     sched
-        .add(Job::new_async("0/2 * * * * * *", |_uuid, _l| {
+        .add(Job::new_async("0 0/1 * * * * *", move |_uuid, _l| {
+           let cloned_inside = cloned.clone();
             Box::pin(async move {
                 println!("I run every minute");
 
                 // calculate income
-                let update_future = NationMutation::update_gold_from_income_timer().await;
+                let update_future = NationMutation::update_gold_from_income_timer(&cloned_inside).await;
 
                 match update_future {
                     Ok(_) => {
@@ -61,12 +63,14 @@ pub async fn initialize_scheduler() -> anyhow::Result<()> {
         })?)
         .await?;
 
+    let cloned_again = db.clone();
     // Upkeep Job - Every 5 Minute
     sched
-        .add(Job::new_async("0 0/5 * * * * *", |_uuid, _l| {
+        .add(Job::new_async("0 0/5 * * * * *", move |_uuid, _l| {
+            let cloned_inside = cloned_again.clone();
             Box::pin(async move {
                 println!("I run every 5 minutes");
-                let update_future = NationMutation::update_gold_from_upkeep_timer().await;
+                let update_future = NationMutation::update_gold_from_upkeep_timer(&cloned_inside).await;
 
                 match update_future {
                     Ok(_) => {
