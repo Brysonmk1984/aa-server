@@ -5,7 +5,8 @@ mod middleware;
 mod routes;
 mod utils;
 
-use aa_battles::types::{Army, ArmyName};
+use aa_battles::types::Army;
+use aa_battles::types::ArmyName;
 use aa_battles::util::create_hash_of_defaults;
 use armies_of_avalon_service::army_service::ArmyQuery;
 use armies_of_avalon_service::cron_service::initialize_scheduler;
@@ -34,6 +35,13 @@ use crate::routes::{
  * stores a hash map of f64s for weapon type against armor type
  */
 static WEAPON_ARMOR_CELL: OnceLock<HashMap<String, f64>> = OnceLock::new();
+
+/**
+ * CAMPAIGN_LEVEL_REWARDS
+ * stores a hashmap of CampaignLevelRewards
+ */
+
+static CAMPAIGN_LEVEL_REWARDS_CELL: OnceLock<HashMap<i8, (i32, Reward)>> = OnceLock::new();
 
 /**
  * ARMY_DEFAULT_CELL
@@ -99,7 +107,7 @@ pub fn main() {
  * fn set_weapon_armor_map
  * used for initializing the chance to hit given weapon type against armor type
  */
-pub async fn set_weapon_armor_hash(state: &AppState) -> anyhow::Result<()> {
+async fn set_weapon_armor_hash(state: &AppState) -> anyhow::Result<()> {
     let weapon_armor_result: Vec<entity::weapon_armor::Model> =
         WeaponArmorQuery::get_weapon_armor_reduction_values(&state.conn).await?;
 
@@ -115,8 +123,55 @@ pub async fn set_weapon_armor_hash(state: &AppState) -> anyhow::Result<()> {
     Ok(())
 }
 
+pub enum Reward {
+    Gold,
+    Enlist(ArmyName),
+}
+
+async fn set_campaign_level_rewards_hash() -> anyhow::Result<()> {
+    let map: HashMap<i8, (i32, Reward)> = HashMap::from([
+        (1, (100, Reward::Enlist(ArmyName::MinuteMenMilitia))),
+        (2, (100, Reward::Enlist(ArmyName::PeacekeeperMonks))),
+        (3, (1000, Reward::Gold)),
+        (4, (100, Reward::Enlist(ArmyName::AmazonianHuntresses))),
+        (5, (1200, Reward::Gold)),
+        (6, (100, Reward::Enlist(ArmyName::NorthWatchLongbowmen))),
+        (7, (1300, Reward::Gold)),
+        (8, (100, Reward::Enlist(ArmyName::RoninImmortals))),
+        (
+            9,
+            (100, Reward::Enlist(ArmyName::BarbariansOfTheOuterSteppe)),
+        ),
+        (10, (1500, Reward::Gold)),
+        (11, (100, Reward::Enlist(ArmyName::DeathDealerAssassins))),
+        (12, (1700, Reward::Gold)),
+        (13, (100, Reward::Enlist(ArmyName::OathSwornKnights))),
+        (14, (1900, Reward::Gold)),
+        (15, (2000, Reward::Gold)),
+        (16, (100, Reward::Enlist(ArmyName::CastlegateCrossbowmen))),
+        (17, (2100, Reward::Gold)),
+        (18, (2200, Reward::Gold)),
+        (19, (100, Reward::Enlist(ArmyName::MagiEnforcers))),
+        (20, (2300, Reward::Gold)),
+        (21, (100, Reward::Enlist(ArmyName::ShinobiMartialArtists))),
+        (22, (2500, Reward::Gold)),
+        (23, (2600, Reward::Gold)),
+        (24, (2700, Reward::Gold)),
+        (25, (100, Reward::Enlist(ArmyName::AvianCliffDwellers))),
+        (26, (100, Reward::Enlist(ArmyName::HighbornCavalry))),
+        (27, (2900, Reward::Gold)),
+        (28, (3000, Reward::Gold)),
+        (29, (100, Reward::Enlist(ArmyName::SkullClanDeathCultists))),
+    ]);
+
+    let _ = CAMPAIGN_LEVEL_REWARDS_CELL.set(map);
+
+    Ok(())
+}
+
 pub async fn initialize_defaults_to_memory(state: &AppState) -> anyhow::Result<()> {
     set_weapon_armor_hash(state).await?;
+    set_campaign_level_rewards_hash().await?;
 
     let result = ArmyQuery::get_all_armies(&state.conn).await?;
     let mut army_defaults: Vec<Army> = result
