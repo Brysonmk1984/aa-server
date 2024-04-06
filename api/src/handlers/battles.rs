@@ -1,13 +1,16 @@
 #![allow(warnings)]
+use std::str::FromStr;
 use std::{collections::HashMap, env};
 
 use ::entity::nation_armies::{self, Entity as NationArmies, Model as NationArmiesModel};
 use aa_battles::types::{ArmyName, Belligerent, EndingBattalionStats};
 use aa_battles::EndBattlePayload;
+use armies_of_avalon_service::types::types::ArmyNameForService;
 use armies_of_avalon_service::{
     battles_service::{self, BattleMutation},
     campaign_service::{CampaignMutation, CampaignQuery},
     nation_service::{NationMutation, NationQuery},
+    types,
 };
 use axum::{
     debug_handler,
@@ -20,10 +23,11 @@ use entity::nation_armies::Model;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::handlers;
 use crate::utils::error::AppError;
+use crate::Reward;
 use crate::ARMY_DEFAULT_CELL;
 use crate::WEAPON_ARMOR_CELL;
+use crate::{handlers, CAMPAIGN_LEVEL_REWARDS_CELL};
 use crate::{handlers::armies::get_all_armies, AppState};
 use aa_battles::{
     do_battle,
@@ -90,12 +94,34 @@ pub async fn run_battle(
         CampaignQuery::get_campaign_level_by_level_number(&state.conn, level).await?;
 
     let completed_level = end_battle_payload.battle_result.winner == Some(Belligerent::EasternArmy);
+
     let winner = if completed_level {
+        // determine reward
+        let (reward_amount, reward_type) = determine_reward(&level);
+
+        // affects nation_armies and nation domain
+        match reward_type {
+            Reward::Gold => {
+                NationMutation::update_gold(&state.conn, east_nation.id, reward_amount).await?;
+            }
+            Reward::Enlist(army) => {
+                NationMutation::upsert_nation_army(
+                    &state.conn,
+                    east_nation.id,
+                    ArmyNameForService::from_str(&army.to_string()).unwrap(),
+                    reward_amount,
+                )
+                .await?;
+            }
+        };
+
         east_nation.id
     } else {
+        println!("western win");
         west_nation.id
     };
 
+    // affects campaign_level domain
     let campaign_nation_level_result = CampaignMutation::upsert_nation_campaign_level(
         &state.conn,
         east_nation.id,
@@ -106,8 +132,6 @@ pub async fn run_battle(
     )
     .await?;
 
-    println!("{campaign_nation_level_result:?}");
-
     let battle_record_result = BattleMutation::insert_battle_record(
         &state.conn,
         east_nation.id,
@@ -116,8 +140,6 @@ pub async fn run_battle(
         winner,
     )
     .await?;
-
-    println!("{:?}", end_battle_payload.battle_result.eastern_battalions);
 
     let cloned_armies = end_battle_payload.battle_result.eastern_battalions.clone();
 
@@ -161,4 +183,12 @@ pub async fn run_battle(
     };
 
     Ok(Json(end_battle_payload))
+}
+
+fn determine_reward(level: &i32) -> (i32, Reward) {
+    let rewards_map = CAMPAIGN_LEVEL_REWARDS_CELL.get().unwrap();
+
+    let result = *rewards_map.get(level).unwrap();
+
+    result.clone()
 }

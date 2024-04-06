@@ -41,7 +41,7 @@ static WEAPON_ARMOR_CELL: OnceLock<HashMap<String, f64>> = OnceLock::new();
  * stores a hashmap of CampaignLevelRewards
  */
 
-static CAMPAIGN_LEVEL_REWARDS_CELL: OnceLock<HashMap<i8, (i32, Reward)>> = OnceLock::new();
+static CAMPAIGN_LEVEL_REWARDS_CELL: OnceLock<HashMap<i32, (i32, Reward)>> = OnceLock::new();
 
 /**
  * ARMY_DEFAULT_CELL
@@ -68,7 +68,7 @@ async fn start() -> anyhow::Result<()> {
     let state = AppState { conn };
 
     initialize_defaults_to_memory(&state).await.unwrap();
-    initialize_scheduler(&state.conn).await?;
+    //initialize_scheduler(&state.conn).await?;
 
     let app: Router = Router::new()
         .nest("/battles", battles_routes(&state))
@@ -123,13 +123,14 @@ async fn set_weapon_armor_hash(state: &AppState) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[derive(Clone, Copy)]
 pub enum Reward {
     Gold,
     Enlist(ArmyName),
 }
 
 async fn set_campaign_level_rewards_hash() -> anyhow::Result<()> {
-    let map: HashMap<i8, (i32, Reward)> = HashMap::from([
+    let map: HashMap<i32, (i32, Reward)> = HashMap::from([
         (1, (100, Reward::Enlist(ArmyName::MinuteMenMilitia))),
         (2, (100, Reward::Enlist(ArmyName::PeacekeeperMonks))),
         (3, (1000, Reward::Gold)),

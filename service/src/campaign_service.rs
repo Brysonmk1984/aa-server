@@ -20,7 +20,6 @@ impl CampaignQuery {
             .filter(campaign_levels::Column::Level.eq(level_number))
             .one(db)
             .await?;
-
         if let Some(campaign_level) = campaign_level_option {
             return Ok(campaign_level);
         } else {
@@ -88,12 +87,14 @@ impl CampaignMutation {
         level_number: i32,
         completed: bool,
     ) -> Result<NationCampaignLevelModel, DbErr> {
-        let existing_level_by_nation_id = NationCampaignLevels::find()
+        let the_result = NationCampaignLevels::find()
             .filter(nation_campaign_levels::Column::NationId.eq(nation_id))
             .filter(nation_campaign_levels::Column::Level.eq(level_number))
             .one(db)
-            .await?;
-        println!("{existing_level_by_nation_id:?}");
+            .await;
+
+        let existing_level_by_nation_id = the_result.unwrap();
+        println!("existing_level_by_nation_id::: {existing_level_by_nation_id:?}");
 
         let result;
         match existing_level_by_nation_id {

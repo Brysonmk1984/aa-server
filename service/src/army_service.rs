@@ -6,7 +6,6 @@ use ::entity::armies::{self, Entity as Armies, Model};
 
 use sea_orm::*;
 use serde::Deserialize;
-use strum::EnumString;
 
 #[derive(Deserialize)]
 pub struct GetAllNationsParams {

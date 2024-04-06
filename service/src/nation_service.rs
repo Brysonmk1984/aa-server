@@ -5,17 +5,23 @@ use sea_orm;
 use std::collections::HashMap;
 use std::fmt;
 
+use crate::types;
+use crate::types::types::ArmyNameForService;
+use crate::user_service;
 use ::entity::armies::{self, Entity as Armies, Model};
 use ::entity::campaign_levels::{self, Entity as CampaignLevels, Model as CampaignLevelsModel};
-use ::entity::nation_armies::{self, Entity as NationArmies, Model as NationArmiesModel};
-use ::entity::nations::{self, Entity as Nations, Model as NationsModel};
+use ::entity::nation_armies::{
+    self, ActiveModel as NationArmiesActiveModel, Entity as NationArmies,
+    Model as NationArmiesModel,
+};
+use ::entity::nations::{
+    self, ActiveModel as NationsActiveModel, Entity as Nations, Model as NationsModel,
+};
 use ::entity::users::{self, Column, Entity as Users, Model as UsersModel};
+
 use sea_orm::sea_query::OnConflict;
 use sea_orm::*;
 use serde::Deserialize;
-use strum::EnumString;
-
-use crate::user_service;
 
 #[derive(Deserialize)]
 pub struct GetAllNationsParams {
@@ -264,6 +270,21 @@ impl NationMutation {
         Ok(())
     }
 
+    pub async fn update_gold(db: &DbConn, nation_id: i32, gold: i32) -> Result<(), DbErr> {
+        let sql = format!(
+            "
+            UPDATE nations
+            SET gold = (gold + 11)
+            WHERE id = {nation_id};
+            "
+        );
+
+        let statement = Statement::from_string(sea_orm::DatabaseBackend::Postgres, sql.to_owned());
+
+        let update_res = db.execute_unprepared(sql.as_str()).await?;
+        Ok(())
+    }
+
     pub async fn buy_army(
         db: &DbConn,
         nation_id: i32,
@@ -384,6 +405,49 @@ impl NationMutation {
             NationMutation::update_partial_armies(update_hash_map, db).await?;
         }
         println!("FINISHED UPDATING");
+        Ok(())
+    }
+
+    pub async fn upsert_nation_army(
+        db: &DbConn,
+        nation_id: i32,
+        army_name: ArmyNameForService,
+        count: i32,
+    ) -> Result<(), DbErr> {
+        let army_option = Armies::find()
+            .filter(armies::Column::Name.eq(army_name.to_string()))
+            .one(db)
+            .await?;
+
+        let army_id = army_option.unwrap().id;
+
+        let existing_army_of_same_type = NationArmies::find()
+            .filter(nation_armies::Column::ArmyId.eq(army_id))
+            .filter(nation_armies::Column::NationId.eq(nation_id))
+            .one(db)
+            .await?;
+
+        let mut result;
+
+        match existing_army_of_same_type {
+            Some(nation_army) => {
+                let nation_army_to_be_inserted = nation_armies::ActiveModel {
+                    count: Set(nation_army.count + count),
+                    ..nation_army.into()
+                };
+                result = nation_army_to_be_inserted.update(db).await?;
+            }
+            None => {
+                let nation_army_to_be_inserted = nation_armies::ActiveModel {
+                    nation_id: Set(nation_id),
+                    army_id: Set(army_id),
+                    count: Set(count),
+                    army_name: Set(army_name.to_string()),
+                    ..Default::default()
+                };
+                result = nation_army_to_be_inserted.insert(db).await?;
+            }
+        }
         Ok(())
     }
 
