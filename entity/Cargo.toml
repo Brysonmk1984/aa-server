@@ -10,7 +10,8 @@ path = "src/lib.rs"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
-aa-battles = {path = "../../aa-battles"}
+#aa-battles = {path = "../../aa-battles"}
+aa-battles = {git = "https://github.com/Brysonmk1984/aa-battles"}
 num-traits = "0.2.17"
 rust_decimal_macros = "1.33.1"
 

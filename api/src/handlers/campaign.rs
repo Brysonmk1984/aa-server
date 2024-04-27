@@ -1,4 +1,6 @@
-use crate::{utils::error::AppError, AppState};
+use std::collections::HashMap;
+
+use crate::{utils::error::AppError, AppState, Reward, CAMPAIGN_LEVEL_REWARDS_CELL};
 use armies_of_avalon_service::{self, campaign_service::CampaignQuery};
 use axum::{
     debug_handler,
@@ -14,11 +16,14 @@ use serde::Serialize;
 #[debug_handler]
 pub async fn get_all_campaign_levels(
     State(state): State<AppState>,
-) -> Result<Json<Vec<CampaignLevelsModel>>, AppError> {
+) -> Result<Json<(Vec<CampaignLevelsModel>, HashMap<i32, (i32, Reward)>)>, AppError> {
     let mut campaign_levels: Vec<CampaignLevelsModel> =
         CampaignQuery::get_all_campaign_levels(&state.conn).await?;
     campaign_levels.sort_by_key(|campaign_level| campaign_level.level);
-    return Ok(Json(campaign_levels));
+
+    let rewards_map = CAMPAIGN_LEVEL_REWARDS_CELL.get().unwrap().clone();
+
+    return Ok(Json((campaign_levels, rewards_map)));
 }
 
 #[derive(Serialize)]

@@ -16,6 +16,7 @@ use axum::{serve, Router};
 
 use migration::sea_orm::{Database, DatabaseConnection};
 use migration::{Migrator, MigratorTrait};
+use serde::Serialize;
 
 use std::collections::HashMap;
 use std::env;
@@ -123,7 +124,7 @@ async fn set_weapon_armor_hash(state: &AppState) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, Serialize)]
 pub enum Reward {
     Gold,
     Enlist(ArmyName),

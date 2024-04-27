@@ -3,7 +3,8 @@ use std::str::FromStr;
 use std::{collections::HashMap, env};
 
 use ::entity::nation_armies::{self, Entity as NationArmies, Model as NationArmiesModel};
-use aa_battles::types::{ArmyName, Belligerent, EndingBattalionStats};
+use aa_battles::types::{ArmyName, BattleArmy, Belligerent, EndingBattalionStats};
+use aa_battles::util::Stats;
 use aa_battles::EndBattlePayload;
 use armies_of_avalon_service::types::types::ArmyNameForService;
 use armies_of_avalon_service::{
@@ -51,7 +52,7 @@ pub async fn run_battle(
     state: State<AppState>,
     Path(level): Path<i32>,
     Json(body): Json<BattleCompetitors>,
-) -> Result<Json<EndBattlePayload>, AppError> {
+) -> Result<Json<FrontEndPayload>, AppError> {
     println!("RUNNING BATTLE {level}");
     let result = get_all_armies(state.clone()).await?.0;
 
@@ -88,17 +89,18 @@ pub async fn run_battle(
         environment: env::var("ENVIRONMENT").unwrap(),
     };
 
-    let end_battle_payload = do_battle(game_defaults, competitors.clone())?;
+    let mut end_battle_payload = do_battle(game_defaults, competitors.clone())?;
 
     let campaign_level =
         CampaignQuery::get_campaign_level_by_level_number(&state.conn, level).await?;
 
     let completed_level = end_battle_payload.battle_result.winner == Some(Belligerent::EasternArmy);
+    let mut reward: Option<(i32, Reward)> = None;
 
     let winner = if completed_level {
         // determine reward
-        let (reward_amount, reward_type) = determine_reward(&level);
-
+        reward = Some(determine_reward(&level));
+        let (reward_amount, reward_type) = reward.unwrap();
         // affects nation_armies and nation domain
         match reward_type {
             Reward::Gold => {
@@ -182,7 +184,11 @@ pub async fn run_battle(
         ..Default::default()
     };
 
-    Ok(Json(end_battle_payload))
+    let front_end_payload = FrontEndPayload {
+        reward,
+        ..end_battle_payload.into()
+    };
+    Ok(Json(front_end_payload))
 }
 
 fn determine_reward(level: &i32) -> (i32, Reward) {
@@ -191,4 +197,24 @@ fn determine_reward(level: &i32) -> (i32, Reward) {
     let result = *rewards_map.get(level).unwrap();
 
     result.clone()
+}
+
+#[derive(Serialize, Debug)]
+pub struct FrontEndPayload {
+    pub battle_result: BattleResult,
+    pub army_compositions: (BattleArmy, BattleArmy),
+    pub events: Vec<String>,
+    pub stats: (Stats, Stats),
+    pub reward: Option<(i32, Reward)>,
+}
+impl From<EndBattlePayload> for FrontEndPayload {
+    fn from(end_battle_payload: EndBattlePayload) -> Self {
+        Self {
+            battle_result: end_battle_payload.battle_result,
+            army_compositions: end_battle_payload.army_compositions,
+            events: end_battle_payload.events,
+            stats: end_battle_payload.stats,
+            reward: None,
+        }
+    }
 }

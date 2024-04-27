@@ -12,3 +12,4 @@ members = [".", "api", "service", "entity", "migration"]
 
 [dependencies]
 armies-of-avalon-api = { path = "api" }
+openssl = { version = "0.10", features = ["vendored"] }

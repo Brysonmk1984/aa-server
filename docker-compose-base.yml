@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  web:
+    build:
+      context: ./
+    ports:
+      - "8112:3001"
+    depends_on:
+       - db
+    links:
+      - db
