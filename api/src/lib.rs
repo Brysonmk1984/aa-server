@@ -60,7 +60,6 @@ async fn start() -> anyhow::Result<()> {
     env::set_var("RUST_LOG", "debug");
     tracing_subscriber::fmt::init();
     dotenvy::dotenv().ok();
-
     let conn = Database::connect(env::var("DATABASE_URL").unwrap().to_owned())
         .await
         .expect("Database connection failed");
