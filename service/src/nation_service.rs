@@ -8,7 +8,7 @@ use std::fmt;
 use crate::types;
 use crate::types::types::ArmyNameForService;
 use crate::user_service;
-use ::entity::armies::{self, Entity as Armies, Model};
+use ::entity::armies::{self, ActiveModel, Entity as Armies, Model};
 use ::entity::campaign_levels::{self, Entity as CampaignLevels, Model as CampaignLevelsModel};
 use ::entity::nation_armies::{
     self, ActiveModel as NationArmiesActiveModel, Entity as NationArmies,
@@ -72,20 +72,28 @@ impl NationQuery {
             .one(db)
             .await?;
 
+        // Newly created accounts won't have a nation or nation army yet, so create them here
         if nation.is_none() {
-            panic!("No nation for user {}", user_id)
+            let created_nation: NationsModel = NationMutation::create_nation(user_id, db).await?;
+
+            let militia_id = Armies::find()
+                .filter(armies::Column::Name.eq("Minute Men Milita"))
+                .one(db)
+                .await?
+                .unwrap()
+                .id;
+            let initial_nation_army: NationArmiesModel =
+                NationMutation::create_nation_army(created_nation.id, militia_id, 100, db).await?;
+            return Ok((created_nation, vec![initial_nation_army]));
         }
 
         let nation_id = &nation.clone().unwrap().id;
         let nation_armies = NationArmies::find()
             .filter(nation_armies::Column::NationId.eq(*nation_id))
             .all(db)
-            .await;
+            .await?;
 
-        match nation_armies {
-            Ok(n_armies) => Ok((nation.unwrap(), n_armies)),
-            Err(_) => Ok((nation.unwrap(), vec![])),
-        }
+        Ok((nation.unwrap(), nation_armies))
     }
 
     pub async fn get_campaign_nation_with_nation_armies_by_nation_id(
@@ -125,6 +133,37 @@ impl NationQuery {
 pub struct NationMutation;
 
 impl NationMutation {
+    pub async fn create_nation(user_id: i32, db: &DbConn) -> Result<NationsModel, DbErr> {
+        let nation_to_be_inserted = NationsActiveModel {
+            user_id: Set(Some(user_id)),
+            gold: Set(1000),
+            is_npc: Set(false),
+            ..Default::default()
+        };
+
+        let nation = nation_to_be_inserted.insert(db).await?;
+
+        Ok(nation)
+    }
+
+    pub async fn create_nation_army(
+        nation_id: i32,
+        army_id: i32,
+        count: i32,
+        db: &DbConn,
+    ) -> Result<NationArmiesModel, DbErr> {
+        let nation_army_to_be_inserted = nation_armies::ActiveModel {
+            nation_id: Set(nation_id),
+            army_id: Set(army_id),
+            count: Set(count),
+            ..Default::default()
+        };
+
+        let created_nation_army: NationArmiesModel = nation_army_to_be_inserted.insert(db).await?;
+
+        Ok(created_nation_army)
+    }
+
     pub async fn update_gold_from_income_timer(db: &DbConn) -> Result<(), DbErr> {
         let sql = "
             SELECT nations.id, name, gold, MAX(level) AS max_level
