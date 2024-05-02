@@ -10,7 +10,7 @@ pub async fn create_or_update_user(
     // Extension(_claims): Extension<HashMap<String, Value>>,
     // warning: uncommenting this causes a silent fail on the FE
     Json(body): Json<Auth0UserPart>,
-) -> Result<Json<UsersModel>, AppError> {
+) -> Result<Json<(UsersModel, bool)>, AppError> {
     // todo!("Verify that the user from the auth token is the user from the id_token - partial_user.auth0_sub");
 
     let partial_user = Auth0UserPart {
@@ -18,6 +18,7 @@ pub async fn create_or_update_user(
         email_verified: body.email_verified,
         auth0_sub: body.auth0_sub.to_string(),
     };
-    let user = UserMutation::insert_or_return_user(&state.conn, partial_user).await?;
-    Ok(Json(user))
+    let (user, is_existing_user) =
+        UserMutation::insert_or_return_user(&state.conn, partial_user).await?;
+    Ok(Json((user, is_existing_user)))
 }

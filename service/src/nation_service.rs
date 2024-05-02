@@ -71,19 +71,21 @@ impl NationQuery {
             .filter(nations::Column::UserId.eq(user_id))
             .one(db)
             .await?;
-
+        println!("CALLED: get_nation_with_nation_armies_by_user_id {nation:?}");
         // Newly created accounts won't have a nation or nation army yet, so create them here
         if nation.is_none() {
             let created_nation: NationsModel = NationMutation::create_nation(user_id, db).await?;
-
+            println!("INSIDE {created_nation:?}");
             let militia_id = Armies::find()
                 .filter(armies::Column::Name.eq("Minute Men Milita"))
                 .one(db)
                 .await?
                 .unwrap()
                 .id;
+            println!("militia id: {militia_id}");
             let initial_nation_army: NationArmiesModel =
                 NationMutation::create_nation_army(created_nation.id, militia_id, 100, db).await?;
+            println!("{initial_nation_army:?}");
             return Ok((created_nation, vec![initial_nation_army]));
         }
 

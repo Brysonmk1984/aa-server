@@ -49,6 +49,7 @@ mod m20240302_175430_add_add_level_value_to_unlock_level_col;
 mod m20240302_182213_insert_army_lore_values;
 mod m20240304_135636_create_weapon_armor_table;
 mod m20240304_140403_insert_weapon_armor_values;
+mod m20240502_131418_remove_nation_name_requirement;
 mod utils;
 
 pub struct Migrator;
@@ -107,6 +108,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20240302_182213_insert_army_lore_values::Migration),
             Box::new(m20240304_135636_create_weapon_armor_table::Migration),
             Box::new(m20240304_140403_insert_weapon_armor_values::Migration),
+            Box::new(m20240502_131418_remove_nation_name_requirement::Migration),
         ]
     }
 }
