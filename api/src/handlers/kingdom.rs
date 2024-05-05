@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 
-use armies_of_avalon_service::nation_service::{NationMutation, NationQuery};
+use armies_of_avalon_service::{
+    army_service::ArmyQuery,
+    nation_service::{NationMutation, NationQuery},
+    types::types::ArmyNameForService,
+};
 use axum::{
     debug_handler,
     extract::{Path, State},
@@ -39,4 +43,31 @@ pub async fn buy_army(
     let result = NationMutation::buy_army(&state.conn, nation_id, army_id).await?;
 
     Ok(Json(result))
+}
+
+#[debug_handler]
+pub async fn initialize_nation(
+    State(state): State<AppState>,
+    Path(user_id): Path<i32>,
+    Extension(_claims): Extension<HashMap<String, Value>>,
+) -> Result<Json<(NationsModel, Vec<NationArmiesModel>)>, AppError> {
+    let created_nation = NationMutation::create_nation(user_id, &state.conn).await?;
+
+    let militia = ArmyQuery::find_army_by_name(ArmyNameForService::MinuteMenMilitia, &state.conn)
+        .await?
+        .unwrap();
+
+    let initial_nation_army_option = NationMutation::create_nation_army(
+        created_nation.id,
+        militia.id,
+        militia.name,
+        100,
+        &state.conn,
+    )
+    .await;
+
+    let initial_nation_army = initial_nation_army_option.unwrap();
+    println!("{initial_nation_army:?}");
+    let result = (created_nation, vec![initial_nation_army]);
+    return Ok(Json(result));
 }

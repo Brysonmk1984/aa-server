@@ -9,8 +9,7 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub user_id: Option<i32>,
-    #[sea_orm(unique)]
-    pub name: String,
+    pub name: Option<String>,
     pub gold: i32,
     pub is_npc: bool,
     pub created_at: DateTimeWithTimeZone,

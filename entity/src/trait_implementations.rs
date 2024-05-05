@@ -22,10 +22,15 @@ impl Into<NationArmy> for NationArmyModel {
 
 impl Into<Nation> for NationModel {
     fn into(self) -> Nation {
+        let name = match self.name {
+            Some(name) => name,
+            None => "".to_string(),
+        };
+
         Nation {
             id: self.id,
             user_id: self.user_id.unwrap_or_default(),
-            name: self.name,
+            name,
             gold: self.gold,
             is_npc: self.is_npc,
         }
