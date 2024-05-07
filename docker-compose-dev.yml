@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  web:
+    env_file: .env.dev
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dcaa
+      POSTGRES_USER: postgres
+    ports:
+      - "5915:5432"
+    volumes:
+      - dcaa-postgres:/var/lib/postgresql/data
+volumes:
+  dcaa-postgres:
