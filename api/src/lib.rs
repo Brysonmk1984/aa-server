@@ -68,7 +68,15 @@ async fn start() -> anyhow::Result<()> {
     let state = AppState { conn };
 
     initialize_defaults_to_memory(&state).await.unwrap();
-    //initialize_scheduler(&state.conn).await?;
+
+    let enable_scheduler = env::var("ENABLE_SCHEDULER")
+        .unwrap()
+        .parse::<bool>()
+        .unwrap();
+
+    if enable_scheduler {
+        initialize_scheduler(&state.conn).await?;
+    }
 
     let app: Router = Router::new()
         .nest("/battles", battles_routes(&state))
