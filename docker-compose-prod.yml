@@ -1,1 +1,7 @@
 version: "3.8"
+services:
+  web:
+    depends_on:
+      - db
+    links:
+      - db

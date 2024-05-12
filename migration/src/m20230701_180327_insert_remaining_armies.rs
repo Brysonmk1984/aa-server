@@ -16,12 +16,13 @@ impl MigrationTrait for Migration {
                 (DEFAULT, 'Highborn Cavalry', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
 
                 (DEFAULT, 'Rōnin Immortals', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
-                (DEFAULT, 'Shinobi Assassins', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
+                (DEFAULT, 'Shinobi Martial Artists', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
 
                 (DEFAULT, 'Amazonian Huntresses', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
                 (DEFAULT, 'Avian Cliff Dwellers', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
                 (DEFAULT, 'Magi Enforcers', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1),
                 (DEFAULT, 'Skull Clan Death Cultists', 'TBD', 1, 0.00, FALSE, 1, 0.00, 0.00, FALSE, 'piercing', 'unarmored', 0.00, 1)
+                
             ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
         raw_sql_migration(manager, statement).await

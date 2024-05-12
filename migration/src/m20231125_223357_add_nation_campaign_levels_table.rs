@@ -12,7 +12,7 @@ impl MigrationTrait for Migration {
                 id SERIAL PRIMARY KEY, 
                 nation_id INT NOT NULL, 
                 campaign_level_id INT NOT NULL, 
-                nation_name VARCHAR(50) NOT NULL,
+                nation_name VARCHAR(50),
                 level INT NOT NULL,
                 attempts INT NOT NULL,
                

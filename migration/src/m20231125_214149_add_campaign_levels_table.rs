@@ -12,9 +12,9 @@ impl MigrationTrait for Migration {
                 id SERIAL PRIMARY KEY, 
                 nation_id INT NOT NULL, 
                 nation_name VARCHAR(50) NOT NULL, 
-                level  INT,
+                level INT UNIQUE,
+      
                
-
                 CONSTRAINT fk_nation_id
                     FOREIGN KEY(nation_id)
                         REFERENCES nations(id),

@@ -8,7 +8,7 @@ pub struct Migration;
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
-            CREATE TABLE nations (id SERIAL PRIMARY KEY, user_id INT, name VARCHAR(50) NOT NULL);
+            CREATE TABLE nations (id SERIAL PRIMARY KEY, user_id INT, name VARCHAR(50) NOT NULL, gold INT NOT NULL DEFAULT 0, is_npc BOOLEAN NOT NULL DEFAULT FALSE, lore VARCHAR(150));
         ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
         raw_sql_migration(manager, statement).await

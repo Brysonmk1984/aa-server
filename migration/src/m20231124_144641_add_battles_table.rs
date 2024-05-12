@@ -13,6 +13,7 @@ impl MigrationTrait for Migration {
                 nation_id_east INT NOT NULL, 
                 nation_id_west INT NOT NULL, 
                 nation_campaign_level_id INT,
+                winner INT,
                 CONSTRAINT fk_east_id
                     FOREIGN KEY(nation_id_east)
                         REFERENCES nations(id),

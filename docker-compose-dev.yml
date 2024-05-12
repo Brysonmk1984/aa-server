@@ -2,7 +2,11 @@ version: "3.8"
 services:
   web:
     env_file: .env.dev
-  db:
+    depends_on:
+       - dbaa
+    links:
+      - dbaa
+  dbaa:
     image: postgres
     restart: always
     environment:
@@ -10,8 +14,8 @@ services:
       POSTGRES_DB: dcaa
       POSTGRES_USER: postgres
     ports:
-      - "5915:5432"
+      - "5916:5432"
     volumes:
-      - dcaa-postgres:/var/lib/postgresql/data
+      - dcaa-postgres:/var/lib/postgresql/data-new
 volumes:
   dcaa-postgres:
