@@ -12,7 +12,6 @@ pub struct Model {
     pub nation_name: String,
     #[sea_orm(unique)]
     pub level: i32,
-    pub lore: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -26,7 +26,7 @@ pub async fn get_all_campaign_levels(
     return Ok(Json((campaign_levels, rewards_map)));
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct NationWithArmies {
     nation_details: NationsModel,
     all_armies: Vec<NationArmiesModel>,
@@ -45,5 +45,6 @@ pub async fn get_campaign_nation_details(
         nation_details,
         all_armies,
     };
+
     Ok(Json(combined_nation_armies))
 }

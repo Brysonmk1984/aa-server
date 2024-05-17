@@ -9,11 +9,10 @@ pub struct Migration;
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let sql = "
-            INSERT INTO campaign_levels(nation_id, nation_name) 
-            SELECT id, name
-            FROM nations WHERE is_npc=TRUE
-            ORDER BY id
-
+        INSERT INTO campaign_levels(nation_id, nation_name, level) 
+        SELECT id, name, id
+        FROM nations WHERE is_npc=TRUE
+        ORDER BY id
             ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
         raw_sql_migration(manager, statement).await
