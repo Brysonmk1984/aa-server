@@ -41,7 +41,6 @@ pub async fn authz_check(mut req: Request, next: Next) -> Result<Response, Statu
         return Ok(next.run(req).await);
     }
 
-    //println!("TOKEN {}", token);
     let jwks: jwk::JwkSet = serde_json::from_str(get_jwks()).unwrap();
 
     let header = decode_header(&token).unwrap();
@@ -52,6 +51,7 @@ pub async fn authz_check(mut req: Request, next: Next) -> Result<Response, Statu
             return Err(StatusCode::UNAUTHORIZED);
         }
     };
+
     if let Some(j) = jwks.find(&kid) {
         match &j.algorithm {
             AlgorithmParameters::RSA(rsa) => {
@@ -59,15 +59,21 @@ pub async fn authz_check(mut req: Request, next: Next) -> Result<Response, Statu
 
                 let mut validation = Validation::new(Algorithm::RS256);
 
-                validation.set_audience(&["http://127.0.0.1:8111"]);
-                validation.validate_exp = false;
+                // The INTENDED audience, to which the token aud is compared against
+                validation.set_audience(&[env::var("TOKEN_AUD").unwrap()]);
 
+                // Was set to false, but should probably be true:
+                validation.validate_exp = true;
+                println!("VALIDATION: {validation:?}");
                 let decoded_token_result = decode::<HashMap<String, serde_json::Value>>(
                     &token,
                     &decoding_key,
                     &validation,
                 );
 
+                // @todo Still need to validate permissions on token
+
+                println!("DECODED TOKEN BODY: {decoded_token_result:?}");
                 if let Ok(decoded_token) = decoded_token_result {
                     println!("DECODED TOKEN:{:?}", decoded_token);
                     let claims = decoded_token.claims;
