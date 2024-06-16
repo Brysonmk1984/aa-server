@@ -8,9 +8,11 @@ use axum::{
 };
 use jsonwebtoken::{
     decode, decode_header,
+    errors::ErrorKind,
     jwk::{self, AlgorithmParameters},
     Algorithm, DecodingKey, Validation,
 };
+
 use serde::{Deserialize, Serialize};
 
 fn get_jwks() -> &'static str {
@@ -73,15 +75,28 @@ pub async fn authz_check(mut req: Request, next: Next) -> Result<Response, Statu
 
                 // @todo Still need to validate permissions on token
 
-                println!("DECODED TOKEN BODY: {decoded_token_result:?}");
-                if let Ok(decoded_token) = decoded_token_result {
-                    println!("DECODED TOKEN:{:?}", decoded_token);
-                    let claims = decoded_token.claims;
-                    req.extensions_mut().insert(claims);
-                    Ok(next.run(req).await)
-                } else {
-                    println!("Invalid Auth Token");
-                    return Err(StatusCode::SERVICE_UNAVAILABLE);
+                match decoded_token_result {
+                    Ok(decoded_token) => {
+                        println!("DECODED TOKEN:{:?}", decoded_token);
+                        let claims = decoded_token.claims;
+                        req.extensions_mut().insert(claims);
+                        Ok(next.run(req).await)
+                    }
+                    Err(error) => {
+                        println!("{error}");
+                        //println!("Invalid Auth Token");
+                        if error == ErrorKind::ExpiredSignature.into()
+                            || error == ErrorKind::ImmatureSignature.into()
+                            || error == ErrorKind::InvalidToken.into()
+                        {
+                            return Err(StatusCode::UNAUTHORIZED);
+                        } else if error == ErrorKind::InvalidAudience.into() {
+                            println!("INVALID AUDIENCE! {error}");
+                            return Err(StatusCode::UNAUTHORIZED);
+                        } else {
+                            return Err(StatusCode::SERVICE_UNAVAILABLE);
+                        }
+                    }
                 }
             }
             _ => unreachable!("this should be a RSA"),
@@ -90,6 +105,4 @@ pub async fn authz_check(mut req: Request, next: Next) -> Result<Response, Statu
         println!("No matching JWK found for the given kid");
         return Err(StatusCode::SERVICE_UNAVAILABLE);
     }
-
-    //Ok(next.run(req).await)
 }

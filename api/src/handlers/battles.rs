@@ -128,7 +128,7 @@ pub async fn run_battle(
         &state.conn,
         east_nation.id,
         campaign_level.id,
-        east_nation.name.unwrap(),
+        east_nation.name.unwrap_or_else(|| "".to_string()),
         level,
         completed_level,
     )

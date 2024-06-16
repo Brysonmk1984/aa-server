@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use armies_of_avalon_service::{
     army_service::ArmyQuery,
-    nation_service::{NationMutation, NationQuery},
+    nation_service::{NationMutation, NationQuery, PatchNationPayload},
     types::types::ArmyNameForService,
 };
 use axum::{
@@ -12,6 +12,7 @@ use axum::{
 };
 
 use entity::{nation_armies::Model as NationArmiesModel, nations::Model as NationsModel};
+use serde::Deserialize;
 use serde_json::Value;
 
 use crate::{utils::error::AppError, AppState};
@@ -23,10 +24,10 @@ pub async fn get_nation_and_armies_by_user_id(
     Extension(_claims): Extension<HashMap<String, Value>>,
 ) -> Result<Json<(NationsModel, Vec<NationArmiesModel>)>, AppError> {
     // todo!("Verify that the user from the auth token is the one user from user_id");
-
+    println!("CLAIMS {_claims:?}");
     let nation_and_armies =
         NationQuery::get_nation_with_nation_armies_by_user_id(&state.conn, user_id).await?;
-    dbg!(&nation_and_armies);
+    //dbg!(&nation_and_armies);
     Ok(Json(nation_and_armies))
 }
 
@@ -70,4 +71,15 @@ pub async fn initialize_nation(
     println!("{initial_nation_army:?}");
     let result = (created_nation, vec![initial_nation_army]);
     return Ok(Json(result));
+}
+
+#[debug_handler]
+pub async fn patch_nation(
+    State(state): State<AppState>,
+    Path((_user_id, nation_id)): Path<(i32, i32)>,
+    Json(payload): Json<PatchNationPayload>,
+) -> Result<Json<NationsModel>, AppError> {
+    let nation = NationMutation::patch_nation(nation_id, &state.conn, payload).await?;
+
+    return Ok(Json(nation));
 }

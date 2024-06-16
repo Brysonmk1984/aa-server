@@ -2,8 +2,11 @@ use ::entity::campaign_levels::{self, Entity as CampaignLevels, Model as Campaig
 use ::entity::nation_armies::{self, Entity as NationArmies, Model as NationArmiesModel};
 use ::entity::nation_campaign_levels::{self, Model as NationCampaignLevelModel};
 use ::entity::nations::{self, Entity as Nations, Model as NationsModel};
+use anyhow::Error;
 use entity::nation_campaign_levels::Entity as NationCampaignLevels;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter, Set};
+
+use crate::user_service;
 
 pub struct CampaignQuery;
 impl CampaignQuery {
@@ -87,6 +90,7 @@ impl CampaignMutation {
         level_number: i32,
         completed: bool,
     ) -> Result<NationCampaignLevelModel, DbErr> {
+        println!("{nation_id} {level_number}");
         let the_result = NationCampaignLevels::find()
             .filter(nation_campaign_levels::Column::NationId.eq(nation_id))
             .filter(nation_campaign_levels::Column::Level.eq(level_number))
@@ -124,8 +128,16 @@ impl CampaignMutation {
                     completed: Set(completed),
                     ..Default::default()
                 };
-
-                result = Ok(nation_cl_active_model.clone().insert(db).await?);
+                println!("{nation_cl_active_model:?}");
+                result = nation_cl_active_model.clone().insert(db).await;
+                println!("THE RESULRT {result:?}");
+                match result {
+                    Ok(result) => return Ok(result),
+                    Err(error) => {
+                        println!("{error:?}");
+                        return Err(error);
+                    }
+                }
             }
         }
 

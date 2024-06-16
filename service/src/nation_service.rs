@@ -28,6 +28,12 @@ pub struct GetAllNationsParams {
     pub is_npc: Option<bool>,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct PatchNationPayload {
+    pub name: Option<String>,
+    pub lore: Option<String>,
+}
+
 pub struct NationQuery;
 impl NationQuery {
     pub async fn get_nation_with_nation_armies(
@@ -71,7 +77,6 @@ impl NationQuery {
             .filter(nations::Column::UserId.eq(user_id))
             .one(db)
             .await?;
-        println!("CALLED: get_nation_with_nation_armies_by_user_id {nation:?}");
 
         let nation_id = &nation.clone().unwrap().id;
         let nation_armies = NationArmies::find()
@@ -130,6 +135,34 @@ impl NationMutation {
         let nation = nation_to_be_inserted.insert(db).await?;
 
         Ok(nation)
+    }
+
+    pub async fn patch_nation(
+        nation_id: i32,
+        db: &DbConn,
+        payload: PatchNationPayload,
+    ) -> Result<NationsModel, DbErr> {
+        let the_result = Nations::find()
+            .filter(nations::Column::Id.eq(nation_id))
+            .one(db)
+            .await;
+
+        let nation_option: Option<NationsModel> = the_result.unwrap();
+
+        match nation_option {
+            Some(nation) => {
+                let nation_to_be_inserted = NationsActiveModel {
+                    id: Unchanged(nation.id),
+                    name: Set(payload.name),
+                    lore: Set(payload.lore),
+                    ..Default::default()
+                };
+
+                let nation = nation_to_be_inserted.update(db).await?;
+                Ok(nation)
+            }
+            None => Err(DbErr::RecordNotFound(format!("nation_id:{nation_id}"))),
+        }
     }
 
     pub async fn create_nation_army(
