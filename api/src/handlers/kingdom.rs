@@ -34,13 +34,13 @@ pub async fn get_nation_and_armies_by_user_id(
 #[debug_handler]
 pub async fn buy_army(
     State(state): State<AppState>,
-    Path((nation_id, army_id)): Path<(i32, i32)>,
+    Path((_user_id, nation_id, army_id)): Path<(i32, i32, i32)>,
     Extension(_claims): Extension<HashMap<String, Value>>,
 ) -> Result<Json<entity::nation_armies::Model>, AppError> {
     println!("{nation_id} {army_id}");
 
     // todo!("Verify that the user from the auth token is the one buying the army");
-    println!("ADS {nation_id} {army_id}");
+    println!("BUYING:{nation_id} {army_id}");
     let result = NationMutation::buy_army(&state.conn, nation_id, army_id).await?;
 
     Ok(Json(result))

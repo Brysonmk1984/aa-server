@@ -48,3 +48,13 @@ pub async fn get_campaign_nation_details(
 
     Ok(Json(combined_nation_armies))
 }
+
+#[debug_handler]
+pub async fn get_highest_campaign_level_completed(
+    State(state): State<AppState>,
+    Path(nation_id): Path<i32>,
+) -> Result<Json<i32>, AppError> {
+    let highest_level_completed =
+        CampaignQuery::get_highest_campaign_level_completed(&state.conn, nation_id).await?;
+    return Ok(Json(highest_level_completed));
+}

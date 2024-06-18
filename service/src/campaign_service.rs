@@ -2,11 +2,12 @@ use ::entity::campaign_levels::{self, Entity as CampaignLevels, Model as Campaig
 use ::entity::nation_armies::{self, Entity as NationArmies, Model as NationArmiesModel};
 use ::entity::nation_campaign_levels::{self, Model as NationCampaignLevelModel};
 use ::entity::nations::{self, Entity as Nations, Model as NationsModel};
-use anyhow::Error;
 use entity::nation_campaign_levels::Entity as NationCampaignLevels;
-use sea_orm::{ActiveModelTrait, ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter, Set};
-
-use crate::user_service;
+use sea_orm::sea_query::Expr;
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, ConnectionTrait, DbBackend, DbConn, DbErr, EntityTrait,
+    QueryFilter, QuerySelect, Set, Statement,
+};
 
 pub struct CampaignQuery;
 impl CampaignQuery {
@@ -77,6 +78,32 @@ impl CampaignQuery {
             Ok(n_armies) => Ok((nation.unwrap(), n_armies)),
             Err(_) => Ok((nation.unwrap(), vec![])),
         }
+    }
+
+    pub async fn get_highest_campaign_level_completed(
+        db: &DbConn,
+        nation_id: i32,
+    ) -> Result<i32, DbErr> {
+        let sql = format!(
+            "   SELECT *
+            FROM nation_campaign_levels
+            WHERE nation_id = {nation_id}
+               ORDER BY level  DESC
+               limit 1"
+        );
+
+        let highest_completed_record: NationCampaignLevelModel =
+            nation_campaign_levels::Entity::find()
+                .from_raw_sql(Statement::from_sql_and_values(
+                    DbBackend::Postgres,
+                    sql,
+                    [1.into()],
+                ))
+                .one(db)
+                .await?
+                .unwrap();
+
+        Ok(highest_completed_record.level)
     }
 }
 
