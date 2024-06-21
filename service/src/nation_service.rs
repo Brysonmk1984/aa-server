@@ -158,8 +158,16 @@ impl NationMutation {
                     ..Default::default()
                 };
 
-                let nation = nation_to_be_inserted.update(db).await?;
-                Ok(nation)
+                let nation = nation_to_be_inserted.update(db).await;
+
+                match nation {
+                    Ok(val) => Ok(val),
+                    Err(err) => {
+                        println!(" what went wrong? {err}");
+                        //DbErr()
+                        Err(DbErr::RecordNotUpdated)
+                    }
+                }
             }
             None => Err(DbErr::RecordNotFound(format!("nation_id:{nation_id}"))),
         }

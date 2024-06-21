@@ -92,18 +92,19 @@ impl CampaignQuery {
                limit 1"
         );
 
-        let highest_completed_record: NationCampaignLevelModel =
-            nation_campaign_levels::Entity::find()
-                .from_raw_sql(Statement::from_sql_and_values(
-                    DbBackend::Postgres,
-                    sql,
-                    [1.into()],
-                ))
-                .one(db)
-                .await?
-                .unwrap();
+        let highest_completed_record_option = nation_campaign_levels::Entity::find()
+            .from_raw_sql(Statement::from_sql_and_values(
+                DbBackend::Postgres,
+                sql,
+                [1.into()],
+            ))
+            .one(db)
+            .await?;
 
-        Ok(highest_completed_record.level)
+        match highest_completed_record_option {
+            Some(record) => Ok(record.level),
+            None => Ok(0),
+        }
     }
 }
 
