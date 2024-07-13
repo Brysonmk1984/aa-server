@@ -1,4 +1,5 @@
 #![allow(warnings)]
+use std::fmt;
 use std::str::FromStr;
 use std::{collections::HashMap, env};
 
@@ -13,6 +14,8 @@ use armies_of_avalon_service::{
     nation_service::{NationMutation, NationQuery},
     types,
 };
+use axum::extract::Query;
+
 use axum::{
     debug_handler,
     extract::{Json, Path, State},
@@ -21,7 +24,7 @@ use axum::{
 };
 use entity::battles::Model as BattlesModel;
 use entity::nation_armies::Model;
-use serde::{Deserialize, Serialize};
+use serde::{de, Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 
 use crate::utils::error::AppError;
@@ -47,10 +50,17 @@ pub struct BattleStats {
     outcome: EndBattlePayload,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct QueryParams {
+    #[serde(default, deserialize_with = "empty_string_as_none")]
+    disableCountAdjustment: Option<bool>,
+}
+
 #[debug_handler]
 pub async fn run_battle(
     state: State<AppState>,
     Path(level): Path<i32>,
+    Query(query): Query<QueryParams>,
     Json(body): Json<BattleCompetitors>,
 ) -> Result<Json<FrontEndPayload>, AppError> {
     println!("RUNNING BATTLE {level}");
@@ -58,7 +68,6 @@ pub async fn run_battle(
 
     // todo!("Verify that the nation retrieved belongs to the user from the auth token");
 
-    println!("{:?}", body);
     let (east_nation, east_nation_armies) =
         NationQuery::get_nation_with_nation_armies(&state.conn, body.east_competitor).await?;
 
@@ -170,12 +179,15 @@ pub async fn run_battle(
         .collect();
     println!("vec_post_battle_nation_army_values: {vec_post_battle_eastern_army_values:?}");
 
-    NationMutation::adjust_nation_army_counts(
-        east_nation.id,
-        vec_post_battle_eastern_army_values,
-        &state.conn,
-    )
-    .await?;
+    // Disable updating of armies after battle if "disableCountAdjustment" query param is true
+    if (!query.disableCountAdjustment.unwrap_or_else(|| false)) {
+        NationMutation::adjust_nation_army_counts(
+            east_nation.id,
+            vec_post_battle_eastern_army_values,
+            &state.conn,
+        )
+        .await?;
+    }
 
     let setting = BattlesModel {
         nation_id_east: east_nation.id,
@@ -216,5 +228,19 @@ impl From<EndBattlePayload> for FrontEndPayload {
             stats: end_battle_payload.stats,
             reward: None,
         }
+    }
+}
+
+/// Serde deserialization decorator to map empty Strings to None,
+fn empty_string_as_none<'de, D, T>(de: D) -> Result<Option<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: FromStr,
+    T::Err: fmt::Display,
+{
+    let opt = Option::<String>::deserialize(de)?;
+    match opt.as_deref() {
+        None | Some("") => Ok(None),
+        Some(s) => FromStr::from_str(s).map_err(de::Error::custom).map(Some),
     }
 }
