@@ -342,7 +342,7 @@ impl NationMutation {
         let sql = format!(
             "
             UPDATE nations
-            SET gold = (gold + 11)
+            SET gold = (gold + {gold})
             WHERE id = {nation_id};
             "
         );
