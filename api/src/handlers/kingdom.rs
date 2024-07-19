@@ -32,6 +32,17 @@ pub async fn get_nation_and_armies_by_user_id(
 }
 
 #[debug_handler]
+pub async fn get_nation_armies_by_nation_id(
+    State(state): State<AppState>,
+    Path((_, nation_id)): Path<(i32, i32)>,
+    Extension(_claims): Extension<HashMap<String, Value>>,
+) -> Result<Json<Vec<NationArmiesModel>>, AppError> {
+    let nation_armies = NationQuery::get_nation_armies_by_nation_id(&state.conn, nation_id).await?;
+    //dbg!(&nation_armies);
+    Ok(Json(nation_armies))
+}
+
+#[debug_handler]
 pub async fn buy_army(
     State(state): State<AppState>,
     Path((_user_id, nation_id, army_id)): Path<(i32, i32, i32)>,

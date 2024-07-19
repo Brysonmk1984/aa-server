@@ -87,6 +87,18 @@ impl NationQuery {
         Ok((nation.unwrap(), nation_armies))
     }
 
+    pub async fn get_nation_armies_by_nation_id(
+        db: &DbConn,
+        nation_id: i32,
+    ) -> Result<Vec<NationArmiesModel>, DbErr> {
+        let nation_armies = NationArmies::find()
+            .filter(nation_armies::Column::NationId.eq(nation_id))
+            .all(db)
+            .await?;
+
+        Ok(nation_armies)
+    }
+
     pub async fn get_campaign_nation_with_nation_armies_by_nation_id(
         db: &DbConn,
         level: i32,
