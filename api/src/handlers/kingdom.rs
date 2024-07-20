@@ -12,7 +12,6 @@ use axum::{
 };
 
 use entity::{nation_armies::Model as NationArmiesModel, nations::Model as NationsModel};
-use serde::Deserialize;
 use serde_json::Value;
 
 use crate::{utils::error::AppError, AppState};
