@@ -5,7 +5,7 @@ version = 3
 [[package]]
 name = "aa-battles"
 version = "0.1.0"
-source = "git+https://github.com/Brysonmk1984/aa-battles#70b9cfaf6d216882d0c3f7e7a6a1f37f8bc8801c"
+source = "git+https://github.com/Brysonmk1984/aa-battles#a01194a62664e506e6552ac480894f9f17ed8b99"
 dependencies = [
  "anyhow",
  "color-eyre",
