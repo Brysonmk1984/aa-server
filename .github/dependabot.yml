@@ -7,4 +7,4 @@ updates:
     # Max # of open pull requests from Dependabot; default is 5
     open-pull-requests-limit: 10
     commit-message:
-      prefix: 'chore: dependabot/npm'
+      prefix: 'chore: dependabot/cargo'
