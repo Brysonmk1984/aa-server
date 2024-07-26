@@ -26,5 +26,5 @@ features = [
 ]
 
 [dev-dependencies]
-tokio = { version = "1.20.0", features = ["macros", "rt"] }
+tokio = { version = "1.39.1", features = ["macros", "rt"] }
 
