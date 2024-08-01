@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 armies-of-avalon-service = { path = "../service" }
-tokio = { version = "1.28.2", features = ["full"] }
+tokio = { version = "1.39.2", features = ["full"] }
 axum = { version = "0.7", features = ['macros']}
 axum-extra = { version = "0.9.1", features = ["typed-header"] }
 tower = "0.4.13"
