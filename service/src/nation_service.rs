@@ -206,6 +206,27 @@ impl NationMutation {
     }
 
     pub async fn update_gold_from_income_timer(db: &DbConn) -> Result<(), DbErr> {
+        // PART 1 - 100 gold for all
+        let base_gold_update = "
+           UPDATE nations
+            SET gold = gold + 100
+            WHERE is_npc = false
+        ";
+
+        let statement_1 = Statement::from_string(
+            sea_orm::DatabaseBackend::Postgres,
+            base_gold_update.to_owned(),
+        );
+        let update_res = db.execute(statement_1).await;
+
+        match update_res {
+            Ok(update_res) => {
+                println!("Base gold update successful: {update_res:?}");
+            }
+            Err(e) => return Err((e)),
+        }
+
+        // PART 2 - Bonus 10 Gold per level
         let sql = "
             SELECT nations.id, name, gold, MAX(level) AS max_level
             FROM nations 
@@ -223,11 +244,10 @@ impl NationMutation {
             let id = cur.try_get::<i32>("", "id").unwrap();
             let gold = cur.try_get::<i32>("", "gold").unwrap();
             let level = cur.try_get::<i32>("", "max_level").unwrap();
-            let updated_gold = gold + 100 + (level * 10);
+            let updated_gold = gold + (level * 10);
             acc.insert(id, updated_gold);
             acc
         });
-
         let hash_map_count = update_hash_map.len();
         let vec_of_hash: Vec<String> = update_hash_map
             .into_iter()
@@ -241,8 +261,12 @@ impl NationMutation {
             })
             .collect();
 
-        let values = vec_of_hash.join("");
+        if (vec_of_hash.len() == 0) {
+            dbg!("No eligible nations. SKIPPING GOLD UPDATE.");
+            return Ok(());
+        }
 
+        let values = vec_of_hash.join("");
         let sql = format!(
             "
     UPDATE nations set
@@ -255,9 +279,8 @@ impl NationMutation {
 "
         );
         let statement = Statement::from_string(sea_orm::DatabaseBackend::Postgres, sql.to_owned());
-
         let update_res = db.execute_unprepared(sql.as_str()).await;
-        println!("{update_res:?}");
+
         Ok(())
     }
 
