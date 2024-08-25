@@ -3,7 +3,7 @@
 use anyhow::Result;
 use sea_orm;
 use std::collections::HashMap;
-use std::fmt;
+use std::{env, fmt};
 
 use crate::types;
 use crate::types::types::ArmyNameForService;
@@ -206,12 +206,19 @@ impl NationMutation {
     }
 
     pub async fn update_gold_from_income_timer(db: &DbConn) -> Result<(), DbErr> {
-        // PART 1 - 100 gold for all
-        let base_gold_update = "
+        let base_income_per_call = env::var("INCOME_BASE_PER_CALL")
+            .unwrap()
+            .parse::<i32>()
+            .unwrap();
+
+        // PART 1 - base gold for all
+        let base_gold_update = format!(
+            "
            UPDATE nations
-            SET gold = gold + 100
+            SET gold = gold + {base_income_per_call}
             WHERE is_npc = false
-        ";
+        "
+        );
 
         let statement_1 = Statement::from_string(
             sea_orm::DatabaseBackend::Postgres,
@@ -226,7 +233,12 @@ impl NationMutation {
             Err(e) => return Err((e)),
         }
 
-        // PART 2 - Bonus 10 Gold per level
+        // PART 2 - Bonus Gold per level
+        let income_per_level = env::var("INCOME_PER_LEVEL")
+            .unwrap()
+            .parse::<i32>()
+            .unwrap();
+
         let sql = "
             SELECT nations.id, name, gold, MAX(level) AS max_level
             FROM nations 
@@ -244,7 +256,7 @@ impl NationMutation {
             let id = cur.try_get::<i32>("", "id").unwrap();
             let gold = cur.try_get::<i32>("", "gold").unwrap();
             let level = cur.try_get::<i32>("", "max_level").unwrap();
-            let updated_gold = gold + (level * 10);
+            let updated_gold = gold + (level * income_per_level);
             acc.insert(id, updated_gold);
             acc
         });

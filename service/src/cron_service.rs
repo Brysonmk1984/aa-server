@@ -1,3 +1,5 @@
+use std::env;
+
 use crate::nation_service::NationMutation;
 use log::{error, info};
 use sea_orm::DbConn;
@@ -30,6 +32,9 @@ use tokio_cron_scheduler::{Job, JobScheduler};
 // "* 0/10 * * * * *" // every second on every tenth minute
 // "1/10,3/10 0/10 * * *  * *" // every first and third second, every ten seconds during the first minute of ten minutes
 
+// every minute
+// "0 0/1 * * * * *",
+
 // every hour
 // "0 1 * * * * *" // every hour on the first minute of the hour - confirmed!
 
@@ -39,9 +44,16 @@ pub async fn initialize_scheduler(db: &DbConn) -> anyhow::Result<()> {
     // Start the scheduler
     sched.start().await?;
     let cloned = db.clone();
-    // Income Job - Every 1 Minute
+
+    let income_calculations_every_x_minutes =
+        env::var("INCOME_CALCULATIONS_EVERY_X_MINUTES").unwrap();
+
+    // Should work for 0-60  "0 <0/1 ... 0/60> * * * * *"
+    let schedule = format!("0 0/{income_calculations_every_x_minutes} * * * * *");
+
+    // Income Job - Every X minute
     sched
-        .add(Job::new_async("0 0/1 * * * * *", move |_uuid, _l| {
+        .add(Job::new_async(schedule.as_str(), move |_uuid, _l| {
            let cloned_inside = cloned.clone();
             Box::pin(async move {
                 println!("I run every minute");
@@ -63,10 +75,14 @@ pub async fn initialize_scheduler(db: &DbConn) -> anyhow::Result<()> {
         })?)
         .await?;
 
+    let upkeep_calculations_every_x_minutes =
+        env::var("UPKEEP_CALCULATIONS_EVERY_X_MINUTES").unwrap();
+    let upkeep_schedule = format!("0 0/{upkeep_calculations_every_x_minutes} * * * * *");
+
     let cloned_again = db.clone();
-    // Upkeep Job - Every 5 Minute
+    // Upkeep Job - Every X Minute
     sched
-        .add(Job::new_async("0 0/5 * * * * *", move |_uuid, _l| {
+        .add(Job::new_async(upkeep_schedule.as_str(), move |_uuid, _l| {
             let cloned_inside = cloned_again.clone();
             Box::pin(async move {
                 println!("I run every 5 minutes");
