@@ -16,6 +16,7 @@ use axum::{serve, Router};
 
 use migration::sea_orm::{Database, DatabaseConnection};
 use migration::{Migrator, MigratorTrait};
+use routes::game::game_routes;
 use serde::Serialize;
 
 use std::collections::HashMap;
@@ -36,6 +37,12 @@ use crate::routes::{
  * stores a hash map of f64s for weapon type against armor type
  */
 static WEAPON_ARMOR_CELL: OnceLock<HashMap<String, f64>> = OnceLock::new();
+
+/**
+ * AOE_SPREAD_CELL
+ * stores a hash map of f64s for aoe impact against different spread values
+ */
+static AOE_SPREAD_CELL: OnceLock<HashMap<i32, [(f64, u8); 7]>> = OnceLock::new();
 
 /**
  * CAMPAIGN_LEVEL_REWARDS
@@ -85,6 +92,7 @@ async fn start() -> anyhow::Result<()> {
         .nest("/campaign", campaign_routes(&state))
         .nest("/users", users_routes(&state))
         .nest("/armies", armies_routes(&state))
+        .nest("/game", game_routes(&state))
         .layer(
             ServiceBuilder::new().layer(CorsLayer::permissive()),
             // .layer(HandleErrorLayer::new(|_: BoxError| async {
@@ -127,6 +135,56 @@ async fn set_weapon_armor_hash(state: &AppState) -> anyhow::Result<()> {
     });
 
     let _ = WEAPON_ARMOR_CELL.set(weapon_armor_hashmap);
+
+    Ok(())
+}
+
+/**
+ * fn set_aoe_spread_hash
+ * used for initializing the aoe_spread calculations
+ * assumes there will only ever be 7 AOE values: 0.0, .05, 1.0, 1.5, 2.0, 2.5, 3.0
+ */
+async fn set_aoe_spread_hash() -> anyhow::Result<()> {
+    let aoe_spread_hashmap = HashMap::from([
+        (
+            1,
+            [
+                (0.0, 1),
+                (0.5, 2),
+                (1.0, 5),
+                (1.5, 9),
+                (2.0, 13),
+                (2.5, 20),
+                (3.0, 33),
+            ],
+        ),
+        (
+            2,
+            [
+                (0.0, 1),
+                (0.5, 1),
+                (1.0, 2),
+                (1.5, 3),
+                (2.0, 5),
+                (2.5, 7),
+                (3.0, 9),
+            ],
+        ),
+        (
+            3,
+            [
+                (0.0, 1),
+                (0.5, 1),
+                (1.0, 1),
+                (1.5, 2),
+                (2.0, 2),
+                (2.5, 3),
+                (3.0, 5),
+            ],
+        ),
+    ]);
+
+    let _ = AOE_SPREAD_CELL.set(aoe_spread_hashmap);
 
     Ok(())
 }
@@ -180,6 +238,7 @@ async fn set_campaign_level_rewards_hash() -> anyhow::Result<()> {
 
 pub async fn initialize_defaults_to_memory(state: &AppState) -> anyhow::Result<()> {
     set_weapon_armor_hash(state).await?;
+    set_aoe_spread_hash().await?;
     set_campaign_level_rewards_hash().await?;
 
     let result = ArmyQuery::get_all_armies(&state.conn).await?;
