@@ -42,7 +42,7 @@ static WEAPON_ARMOR_CELL: OnceLock<HashMap<String, f64>> = OnceLock::new();
  * AOE_SPREAD_CELL
  * stores a hash map of f64s for aoe impact against different spread values
  */
-static AOE_SPREAD_CELL: OnceLock<HashMap<i32, [(f64, u8); 7]>> = OnceLock::new();
+static AOE_SPREAD_CELL: OnceLock<HashMap<u8, [(f64, u8); 7]>> = OnceLock::new();
 
 /**
  * CAMPAIGN_LEVEL_REWARDS
@@ -156,7 +156,7 @@ async fn set_weapon_armor_hash(state: &AppState) -> anyhow::Result<()> {
  * assumes there will only ever be 7 AOE values: 0.0, .05, 1.0, 1.5, 2.0, 2.5, 3.0
  */
 async fn set_aoe_spread_hash() -> anyhow::Result<()> {
-    let aoe_spread_hashmap = HashMap::from([
+    let aoe_spread_hashmap: HashMap<u8, [(f64, u8); 7]> = HashMap::from([
         (
             1,
             [

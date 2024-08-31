@@ -29,6 +29,7 @@ use serde_json::Value;
 
 use crate::utils::error::AppError;
 use crate::Reward;
+use crate::AOE_SPREAD_CELL;
 use crate::ARMY_DEFAULT_CELL;
 use crate::WEAPON_ARMOR_CELL;
 use crate::{handlers, CAMPAIGN_LEVEL_REWARDS_CELL};
@@ -94,6 +95,7 @@ pub async fn run_battle(
 
     let game_defaults = GameDefaults {
         weapons_vs_armor: WEAPON_ARMOR_CELL.get().unwrap(),
+        aoe_vs_spread: AOE_SPREAD_CELL.get().unwrap(),
         army_defaults: ARMY_DEFAULT_CELL.get().unwrap(),
         environment: env::var("ENVIRONMENT").unwrap(),
     };

@@ -6,7 +6,7 @@ use std::collections::HashMap;
 #[derive(Serialize)]
 pub struct GameDefaults {
     weapon_armor_values: HashMap<String, f64>,
-    aoe_spread_values: HashMap<i32, [(f64, u8); 7]>,
+    aoe_spread_values: HashMap<u8, [(f64, u8); 7]>,
     income_calc_minutes: u8,
     upkeep_calc_minutes: u8,
 }
