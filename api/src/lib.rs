@@ -60,6 +60,8 @@ static ARMY_DEFAULT_CELL: OnceLock<HashMap<ArmyName, Army>> = OnceLock::new();
 #[derive(Clone, Debug)]
 pub struct AppState {
     conn: DatabaseConnection,
+    income_calc_minutes: String,
+    upkeep_calc_minutes: String,
 }
 
 #[tokio::main]
@@ -72,7 +74,11 @@ async fn start() -> anyhow::Result<()> {
         .expect("Database connection failed");
     Migrator::up(&conn, None).await.unwrap();
 
-    let state = AppState { conn };
+    let state = AppState {
+        conn,
+        income_calc_minutes: env::var("INCOME_CALCULATIONS_EVERY_X_MINUTES").unwrap(),
+        upkeep_calc_minutes: env::var("UPKEEP_CALCULATIONS_EVERY_X_MINUTES").unwrap(),
+    };
 
     initialize_defaults_to_memory(&state).await.unwrap();
 
@@ -82,7 +88,12 @@ async fn start() -> anyhow::Result<()> {
         .unwrap();
 
     if enable_scheduler {
-        initialize_scheduler(&state.conn).await?;
+        initialize_scheduler(
+            &state.conn,
+            &state.income_calc_minutes.as_str(),
+            &state.upkeep_calc_minutes.as_str(),
+        )
+        .await?;
     }
 
     let app: Router = Router::new()

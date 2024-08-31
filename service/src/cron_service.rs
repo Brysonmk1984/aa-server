@@ -38,18 +38,19 @@ use tokio_cron_scheduler::{Job, JobScheduler};
 // every hour
 // "0 1 * * * * *" // every hour on the first minute of the hour - confirmed!
 
-pub async fn initialize_scheduler(db: &DbConn) -> anyhow::Result<()> {
+pub async fn initialize_scheduler(
+    db: &DbConn,
+    income_calc_minutes: &str,
+    upkeep_calc_minutes: &str,
+) -> anyhow::Result<()> {
     let sched = JobScheduler::new().await?;
 
     // Start the scheduler
     sched.start().await?;
     let cloned = db.clone();
 
-    let income_calculations_every_x_minutes =
-        env::var("INCOME_CALCULATIONS_EVERY_X_MINUTES").unwrap();
-
     // Should work for 0-60  "0 <0/1 ... 0/60> * * * * *"
-    let schedule = format!("0 0/{income_calculations_every_x_minutes} * * * * *");
+    let schedule = format!("0 0/{income_calc_minutes} * * * * *");
 
     // Income Job - Every X minute
     sched
@@ -75,9 +76,7 @@ pub async fn initialize_scheduler(db: &DbConn) -> anyhow::Result<()> {
         })?)
         .await?;
 
-    let upkeep_calculations_every_x_minutes =
-        env::var("UPKEEP_CALCULATIONS_EVERY_X_MINUTES").unwrap();
-    let upkeep_schedule = format!("0 0/{upkeep_calculations_every_x_minutes} * * * * *");
+    let upkeep_schedule = format!("0 0/{upkeep_calc_minutes} * * * * *");
 
     let cloned_again = db.clone();
     // Upkeep Job - Every X Minute
