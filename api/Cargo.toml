@@ -10,7 +10,7 @@ armies-of-avalon-service = { path = "../service" }
 tokio = { version = "1.28.2", features = ["full"] }
 axum = { version = "0.7", features = ['macros']}
 axum-extra = { version = "0.9.1", features = ["typed-header"] }
-tower = "0.4.13"
+tower = "0.5.0"
 tower-http = { version = "0.5", features = ["fs", "cors"] }
 tower-cookies = "0.1"
 anyhow = "1.0.71"
