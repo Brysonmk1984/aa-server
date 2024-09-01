@@ -14,7 +14,7 @@ struct IncomeDefaults {
 #[derive(Serialize)]
 pub struct GameDefaults {
     weapon_armor_values: HashMap<String, f64>,
-    aoe_spread_values: HashMap<u8, [(f64, u8); 7]>,
+    aoe_spread_values: HashMap<i32, Vec<(f64, i32)>>,
     income: IncomeDefaults,
 }
 

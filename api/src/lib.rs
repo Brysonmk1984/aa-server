@@ -10,6 +10,7 @@ use aa_battles::types::ArmyName;
 use aa_battles::util::create_hash_of_defaults;
 use armies_of_avalon_service::army_service::ArmyQuery;
 use armies_of_avalon_service::cron_service::initialize_scheduler;
+use armies_of_avalon_service::initialization_service::AoeSpreadQuery;
 use armies_of_avalon_service::initialization_service::WeaponArmorQuery;
 
 use axum::{serve, Router};
@@ -42,7 +43,7 @@ static WEAPON_ARMOR_CELL: OnceLock<HashMap<String, f64>> = OnceLock::new();
  * AOE_SPREAD_CELL
  * stores a hash map of f64s for aoe impact against different spread values
  */
-static AOE_SPREAD_CELL: OnceLock<HashMap<u8, [(f64, u8); 7]>> = OnceLock::new();
+static AOE_SPREAD_CELL: OnceLock<HashMap<i32, Vec<(f64, i32)>>> = OnceLock::new();
 
 /**
  * CAMPAIGN_LEVEL_REWARDS
@@ -153,50 +154,22 @@ async fn set_weapon_armor_hash(state: &AppState) -> anyhow::Result<()> {
 /**
  * fn set_aoe_spread_hash
  * used for initializing the aoe_spread calculations
- * assumes there will only ever be 7 AOE values: 0.0, .05, 1.0, 1.5, 2.0, 2.5, 3.0
  */
-async fn set_aoe_spread_hash() -> anyhow::Result<()> {
-    let aoe_spread_hashmap: HashMap<u8, [(f64, u8); 7]> = HashMap::from([
-        (
-            1,
-            [
-                (0.0, 1),
-                (0.5, 2),
-                (1.0, 5),
-                (1.5, 9),
-                (2.0, 13),
-                (2.5, 20),
-                (3.0, 33),
-            ],
-        ),
-        (
-            2,
-            [
-                (0.0, 1),
-                (0.5, 1),
-                (1.0, 2),
-                (1.5, 3),
-                (2.0, 5),
-                (2.5, 7),
-                (3.0, 9),
-            ],
-        ),
-        (
-            3,
-            [
-                (0.0, 1),
-                (0.5, 1),
-                (1.0, 1),
-                (1.5, 2),
-                (2.0, 2),
-                (2.5, 3),
-                (3.0, 5),
-            ],
-        ),
-    ]);
+async fn set_aoe_spread_hash(state: &AppState) -> anyhow::Result<()> {
+    let aoe_spread_result: Vec<entity::aoe_spread::Model> =
+        AoeSpreadQuery::get_aoe_spread_values(&state.conn).await?;
 
-    let _ = AOE_SPREAD_CELL.set(aoe_spread_hashmap);
-
+    let update_hash_map: HashMap<i32, Vec<(f64, i32)>> = aoe_spread_result.iter().fold(
+        HashMap::from([(1, Vec::new()), (2, Vec::new()), (3, Vec::new())]),
+        |mut acc, cur| {
+            let aoe: f64 = cur.aoe.try_into().unwrap();
+            let val = acc.get_mut(&cur.spread).unwrap();
+            val.push((aoe, cur.hits));
+            acc
+        },
+    );
+    println!("{update_hash_map:?}");
+    let _ = AOE_SPREAD_CELL.set(update_hash_map);
     Ok(())
 }
 
@@ -249,7 +222,7 @@ async fn set_campaign_level_rewards_hash() -> anyhow::Result<()> {
 
 pub async fn initialize_defaults_to_memory(state: &AppState) -> anyhow::Result<()> {
     set_weapon_armor_hash(state).await?;
-    set_aoe_spread_hash().await?;
+    set_aoe_spread_hash(state).await?;
     set_campaign_level_rewards_hash().await?;
 
     let result = ArmyQuery::get_all_armies(&state.conn).await?;

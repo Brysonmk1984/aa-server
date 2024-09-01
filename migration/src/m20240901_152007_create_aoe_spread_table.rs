@@ -10,7 +10,7 @@ impl MigrationTrait for Migration {
         let sql = "
             CREATE TABLE aoe_spread (
                 id SERIAL PRIMARY KEY, 
-                spread INT,
+                spread INT NOT NULL,
                 aoe NUMERIC(2,1) NOT NULL,
                 hits INT  NOT NULL
             );

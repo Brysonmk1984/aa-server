@@ -2,6 +2,7 @@
 
 pub mod prelude;
 
+pub mod aoe_spread;
 pub mod armies;
 pub mod battles;
 pub mod campaign_levels;
