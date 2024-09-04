@@ -16,7 +16,6 @@ num-traits = "0.2.17"
 rust_decimal_macros = "^1.36"
 
 [dependencies.sea-orm]
-version = "0.12.0-rc.3" # sea-orm version
-sea-orm = { version = "^0.11.3", features = [ "sqlx-postgres", "runtime-actix-native-tls", "macros" ], default-features = false }
+sea-orm = { version = "^1.0.1", features = [ "sqlx-postgres", "runtime-actix-native-tls", "macros" ], default-features = false }
 
 
