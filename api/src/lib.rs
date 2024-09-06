@@ -13,25 +13,30 @@ use armies_of_avalon_service::cron_service::initialize_scheduler;
 use armies_of_avalon_service::initialization_service::AoeSpreadQuery;
 use armies_of_avalon_service::initialization_service::WeaponArmorQuery;
 
+use axum::response::Response;
 use axum::{serve, Router};
 
 use migration::sea_orm::{Database, DatabaseConnection};
 use migration::{Migrator, MigratorTrait};
 use routes::game::game_routes;
 use serde::Serialize;
-
-use std::collections::HashMap;
-use std::env;
-use std::sync::OnceLock;
-use tokio::net::TcpListener;
-use tower::ServiceBuilder;
-use tower_http::cors::CorsLayer;
+use tower_cookies::cookie::time::Duration;
+use tower_http::classify::ServerErrorsFailureClass;
+use tower_http::trace::TraceLayer;
+use tracing_subscriber::fmt::format::Full;
 
 use crate::middleware::auth::authz_check;
 use crate::routes::campaign::campaign_routes;
 use crate::routes::{
     armies::armies_routes, battles::battles_routes, kingdom::kingdom_routes, users::users_routes,
 };
+use std::collections::HashMap;
+use std::env;
+use std::sync::OnceLock;
+use tokio::net::TcpListener;
+use tower::ServiceBuilder;
+use tower_http::cors::CorsLayer;
+use tracing::Span;
 
 /**
  * WEAPON_ARMOR_CELL
@@ -105,11 +110,8 @@ async fn start() -> anyhow::Result<()> {
         .nest("/users", users_routes(&state))
         .nest("/armies", armies_routes(&state))
         .nest("/game", game_routes(&state))
-        .layer(
-            ServiceBuilder::new().layer(CorsLayer::permissive()),
-            // .layer(HandleErrorLayer::new(|_: BoxError| async {
-            // })),
-        )
+        .layer(ServiceBuilder::new().layer(CorsLayer::permissive()))
+        .layer(TraceLayer::new_for_http())
         .with_state(state);
 
     let host = env::var("HOST").expect("HOST is not set in .env file");

@@ -11,7 +11,7 @@ tokio = { version = "^1.40", features = ["full"] }
 axum = { version = "0.7", features = ['macros']}
 axum-extra = { version = "0.9.1", features = ["typed-header"] }
 tower = "0.5"
-tower-http = { version = "0.5", features = ["fs", "cors"] }
+tower-http = { version = "0.5", features = ["fs", "cors", "trace"] }
 tower-cookies = "0.10.0"
 anyhow = "1.0.71"
 dotenvy = "0.15.7"
@@ -23,3 +23,4 @@ migration = { path = "../migration" }
 #aa-battles = {path = "../../aa-battles"}
 aa-battles = {git = "https://github.com/Brysonmk1984/aa-battles"}
 jsonwebtoken = "9.2.0"
+tracing = "0.1.40"

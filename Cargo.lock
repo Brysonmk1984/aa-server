@@ -178,6 +178,7 @@ dependencies = [
  "tower 0.5.0",
  "tower-cookies",
  "tower-http",
+ "tracing",
  "tracing-subscriber",
 ]
 
