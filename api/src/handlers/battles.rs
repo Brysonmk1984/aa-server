@@ -5,7 +5,7 @@ use std::{collections::HashMap, env};
 
 use ::entity::nation_armies::{self, Entity as NationArmies, Model as NationArmiesModel};
 use aa_battles::types::{ArmyName, BattleArmy, Belligerent, EndingBattalionStats};
-use aa_battles::util::Stats;
+use aa_battles::util::{create_hash_of_defaults, Stats};
 use aa_battles::EndBattlePayload;
 use armies_of_avalon_service::types::types::ArmyNameForService;
 use armies_of_avalon_service::{
@@ -66,8 +66,11 @@ pub async fn run_battle(
 ) -> Result<Json<FrontEndPayload>, AppError> {
     println!("RUNNING BATTLE {level}");
     let result = get_all_armies(state.clone()).await?.0;
-
-    // todo!("Verify that the nation retrieved belongs to the user from the auth token");
+    let mapped_armies = result
+        .iter()
+        .map(|army_default| army_default.army.clone())
+        .collect();
+    let army_default_hash = create_hash_of_defaults(mapped_armies);
 
     let (east_nation, east_nation_armies) =
         NationQuery::get_nation_with_nation_armies(&state.conn, body.east_competitor).await?;
@@ -96,7 +99,7 @@ pub async fn run_battle(
     let game_defaults = GameDefaults {
         weapons_vs_armor: WEAPON_ARMOR_CELL.get().unwrap(),
         aoe_vs_spread: AOE_SPREAD_CELL.get().unwrap(),
-        army_defaults: ARMY_DEFAULT_CELL.get().unwrap(),
+        army_defaults: army_default_hash,
         environment: env::var("ENVIRONMENT").unwrap(),
     };
 

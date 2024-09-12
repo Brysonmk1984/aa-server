@@ -3,6 +3,7 @@ extern crate aa_battles;
 mod handlers;
 mod middleware;
 mod routes;
+mod types;
 mod utils;
 
 use aa_battles::types::Army;
@@ -16,6 +17,7 @@ use armies_of_avalon_service::initialization_service::WeaponArmorQuery;
 use axum::response::Response;
 use axum::{serve, Router};
 
+use entity::armies::Model as ArmyModel;
 use migration::sea_orm::{Database, DatabaseConnection};
 use migration::{Migrator, MigratorTrait};
 use routes::game::game_routes;
@@ -24,6 +26,8 @@ use tower_cookies::cookie::time::Duration;
 use tower_http::classify::ServerErrorsFailureClass;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::fmt::format::Full;
+use types::game_defaults::ArmyDefaults;
+use types::game_defaults::ArmyMeta;
 
 use crate::middleware::auth::authz_check;
 use crate::routes::campaign::campaign_routes;
@@ -61,7 +65,7 @@ static CAMPAIGN_LEVEL_REWARDS_CELL: OnceLock<HashMap<i32, (i32, Reward)>> = Once
  * ARMY_DEFAULT_CELL
  * stores a hash map of f64s for weapon type against armor type
  */
-static ARMY_DEFAULT_CELL: OnceLock<HashMap<ArmyName, Army>> = OnceLock::new();
+static ARMY_DEFAULT_CELL: OnceLock<Vec<ArmyDefaults>> = OnceLock::new();
 
 #[derive(Clone, Debug)]
 pub struct AppState {
@@ -228,15 +232,17 @@ pub async fn initialize_defaults_to_memory(state: &AppState) -> anyhow::Result<(
     set_campaign_level_rewards_hash().await?;
 
     let result = ArmyQuery::get_all_armies(&state.conn).await?;
-    let mut army_defaults: Vec<Army> = result
+
+    let mut armies = result
         .iter()
-        .map(|army| army.clone().into())
-        .collect::<Vec<Army>>();
+        .map(|model: &ArmyModel| model.clone().into())
+        .collect::<Vec<ArmyDefaults>>();
 
-    army_defaults.sort_by(|a, b| a.id.cmp(&b.id));
+    armies.sort_by(|a, b| a.army.id.cmp(&b.army.id));
 
-    let army_default_hash = create_hash_of_defaults(army_defaults);
+    // let army_default_hash = create_hash_of_defaults(army_defaults);
+    // println!("{army_default_hash:?}");
 
-    let _ = ARMY_DEFAULT_CELL.set(army_default_hash);
+    let _ = ARMY_DEFAULT_CELL.set(armies);
     Ok(())
 }

@@ -2,7 +2,7 @@
 use sea_orm;
 use std::fmt;
 
-use ::entity::armies::{self, Entity as Armies, Model};
+use ::entity::armies::{self, Entity as Armies, Model as ArmiesModel};
 
 use sea_orm::*;
 use serde::Deserialize;
@@ -32,9 +32,7 @@ impl ArmyQuery {
             .await
     }
 
-    pub async fn get_all_armies(
-        db: &DbConn,
-    ) -> Result<Vec<<Armies as sea_orm::EntityTrait>::Model>, DbErr> {
+    pub async fn get_all_armies(db: &DbConn) -> Result<Vec<ArmiesModel>, DbErr> {
         Armies::find().all(db).await
     }
 }
