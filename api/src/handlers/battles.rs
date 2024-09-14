@@ -28,12 +28,12 @@ use serde::{de, Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 
 use crate::utils::error::AppError;
-use crate::Reward;
 use crate::AOE_SPREAD_CELL;
 use crate::ARMY_DEFAULT_CELL;
+use crate::CAMPAIGN_LEVEL_REWARDS_CELL;
 use crate::WEAPON_ARMOR_CELL;
-use crate::{handlers, CAMPAIGN_LEVEL_REWARDS_CELL};
-use crate::{handlers::armies::get_all_armies, AppState};
+use crate::{AppState, Reward};
+
 use aa_battles::{
     do_battle,
     types::{Army, BattleResult, GameDefaults, Nation, NationArmy},
@@ -65,8 +65,10 @@ pub async fn run_battle(
     Json(body): Json<BattleCompetitors>,
 ) -> Result<Json<FrontEndPayload>, AppError> {
     println!("RUNNING BATTLE {level}");
-    let result = get_all_armies(state.clone()).await?.0;
-    let mapped_armies = result
+
+    let mapped_armies = ARMY_DEFAULT_CELL
+        .get()
+        .unwrap()
         .iter()
         .map(|army_default| army_default.army.clone())
         .collect();

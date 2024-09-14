@@ -6,41 +6,29 @@ mod routes;
 mod types;
 mod utils;
 
-use aa_battles::types::Army;
 use aa_battles::types::ArmyName;
-use aa_battles::util::create_hash_of_defaults;
 use armies_of_avalon_service::army_service::ArmyQuery;
 use armies_of_avalon_service::cron_service::initialize_scheduler;
 use armies_of_avalon_service::initialization_service::AoeSpreadQuery;
 use armies_of_avalon_service::initialization_service::WeaponArmorQuery;
-
-use axum::response::Response;
 use axum::{serve, Router};
 
+use crate::middleware::auth::authz_check;
+use crate::routes::campaign::campaign_routes;
+use crate::routes::{battles::battles_routes, kingdom::kingdom_routes, users::users_routes};
 use entity::armies::Model as ArmyModel;
 use migration::sea_orm::{Database, DatabaseConnection};
 use migration::{Migrator, MigratorTrait};
 use routes::game::game_routes;
 use serde::Serialize;
-use tower_cookies::cookie::time::Duration;
-use tower_http::classify::ServerErrorsFailureClass;
-use tower_http::trace::TraceLayer;
-use tracing_subscriber::fmt::format::Full;
-use types::game_defaults::ArmyDefaults;
-use types::game_defaults::ArmyMeta;
-
-use crate::middleware::auth::authz_check;
-use crate::routes::campaign::campaign_routes;
-use crate::routes::{
-    armies::armies_routes, battles::battles_routes, kingdom::kingdom_routes, users::users_routes,
-};
 use std::collections::HashMap;
 use std::env;
 use std::sync::OnceLock;
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
-use tracing::Span;
+use tower_http::trace::TraceLayer;
+use types::game_defaults::ArmyDefaults;
 
 /**
  * WEAPON_ARMOR_CELL
@@ -112,7 +100,6 @@ async fn start() -> anyhow::Result<()> {
         .route_layer(axum::middleware::from_fn(authz_check))
         .nest("/campaign", campaign_routes(&state))
         .nest("/users", users_routes(&state))
-        .nest("/armies", armies_routes(&state))
         .nest("/game", game_routes(&state))
         .layer(ServiceBuilder::new().layer(CorsLayer::permissive()))
         .layer(TraceLayer::new_for_http())
