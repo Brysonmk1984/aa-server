@@ -82,50 +82,6 @@ pub async fn run_test_battle(
     let competitors = (east_tuple, west_tuple);
 
     let end_battle_payload = do_battle(game_defaults, competitors.clone())?;
-    let cloned_armies = end_battle_payload.battle_result.eastern_battalions.clone();
-    let eastern_battalions = competitors.0 .1;
-    let _vec_post_battle_eastern_army_values: Vec<TestBattleArmy> = eastern_battalions
-        .iter()
-        .map(|nation_army| {
-            let count = cloned_armies
-                .iter()
-                .fold(nation_army.count, |count, battalion| {
-                    if battalion.name == nation_army.army_name {
-                        battalion.count
-                    } else {
-                        count
-                    }
-                });
-
-            TestBattleArmy {
-                count,
-                id: nation_army.id,
-                name: nation_army.army_name,
-            }
-        })
-        .collect();
-
-    let western_battalions = competitors.1 .1;
-    let _vec_post_battle_western_army_values: Vec<TestBattleArmy> = western_battalions
-        .iter()
-        .map(|nation_army| {
-            let count = cloned_armies
-                .iter()
-                .fold(nation_army.count, |count, battalion| {
-                    if battalion.name == nation_army.army_name {
-                        battalion.count
-                    } else {
-                        count
-                    }
-                });
-
-            TestBattleArmy {
-                count,
-                id: nation_army.id,
-                name: nation_army.army_name,
-            }
-        })
-        .collect();
 
     let front_end_payload = TestFrontEndPayload {
         ..end_battle_payload.into()
