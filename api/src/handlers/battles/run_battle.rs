@@ -99,8 +99,8 @@ pub async fn run_battle(
     let competitors = (east_tuple, west_tuple);
 
     let game_defaults = GameDefaults {
-        weapons_vs_armor: WEAPON_ARMOR_CELL.get().unwrap(),
-        aoe_vs_spread: AOE_SPREAD_CELL.get().unwrap(),
+        weapons_vs_armor: WEAPON_ARMOR_CELL.get().unwrap().clone(),
+        aoe_vs_spread: AOE_SPREAD_CELL.get().unwrap().clone(),
         army_defaults: army_default_hash,
         environment: env::var("ENVIRONMENT").unwrap(),
     };

@@ -2,7 +2,7 @@ use std::env;
 
 use aa_battles::{
     do_battle,
-    types::{Army, ArmyName, BattleArmy, BattleResult, GameDefaults, Nation, NationArmy},
+    types::{ArmyName, BattleArmy, BattleResult, GameDefaults, Nation, NationArmy},
     util::{create_hash_of_defaults, Stats},
     EndBattlePayload,
 };
@@ -39,8 +39,8 @@ pub async fn run_test_battle(
     let army_default_hash = create_hash_of_defaults(default_armies);
 
     let game_defaults = GameDefaults {
-        weapons_vs_armor: WEAPON_ARMOR_CELL.get().unwrap(),
-        aoe_vs_spread: AOE_SPREAD_CELL.get().unwrap(),
+        weapons_vs_armor: WEAPON_ARMOR_CELL.get().unwrap().clone(),
+        aoe_vs_spread: AOE_SPREAD_CELL.get().unwrap().clone(),
         army_defaults: army_default_hash,
         environment: env::var("ENVIRONMENT").unwrap(),
     };

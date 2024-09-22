@@ -1,5 +1,3 @@
-use std::env;
-
 use crate::nation_service::NationMutation;
 use log::{error, info};
 use sea_orm::DbConn;

@@ -3,10 +3,10 @@ use ::entity::nation_armies::{self, Entity as NationArmies, Model as NationArmie
 use ::entity::nation_campaign_levels::{self, Model as NationCampaignLevelModel};
 use ::entity::nations::{self, Entity as Nations, Model as NationsModel};
 use entity::nation_campaign_levels::Entity as NationCampaignLevels;
-use sea_orm::sea_query::Expr;
+
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, ConnectionTrait, DbBackend, DbConn, DbErr, EntityTrait,
-    QueryFilter, QuerySelect, Set, Statement,
+    ActiveModelTrait, ColumnTrait, DbBackend, DbConn, DbErr, EntityTrait, QueryFilter, Set,
+    Statement,
 };
 
 pub struct CampaignQuery;
