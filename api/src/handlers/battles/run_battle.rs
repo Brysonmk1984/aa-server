@@ -4,7 +4,13 @@ use std::str::FromStr;
 use std::{collections::HashMap, env};
 
 use ::entity::nation_armies::{self, Entity as NationArmies, Model as NationArmiesModel};
-use aa_battles::types::{ArmyName, BattleArmy, Belligerent, EndingBattalionStats};
+use aa_battles::entities::battle_army::battle_army::BattleArmy;
+use aa_battles::entities::battle_result::battle_result::BattleResult;
+use aa_battles::entities::game_defaults::GameDefaults;
+use aa_battles::entities::nation::Nation;
+use aa_battles::entities::nation_army::nation_army::NationArmy;
+use aa_battles::enums::Belligerent;
+
 use aa_battles::util::{create_hash_of_defaults, Stats};
 use aa_battles::EndBattlePayload;
 use armies_of_avalon_service::types::types::ArmyNameForService;
@@ -34,10 +40,7 @@ use crate::CAMPAIGN_LEVEL_REWARDS_CELL;
 use crate::WEAPON_ARMOR_CELL;
 use crate::{AppState, Reward};
 
-use aa_battles::{
-    do_battle,
-    types::{Army, BattleResult, GameDefaults, Nation, NationArmy},
-};
+use aa_battles::do_battle;
 
 #[derive(Deserialize, Debug)]
 pub struct BattleCompetitors {

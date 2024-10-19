@@ -2,7 +2,11 @@ use std::env;
 
 use aa_battles::{
     do_battle,
-    types::{ArmyName, BattleArmy, BattleResult, GameDefaults, Nation, NationArmy},
+    entities::{
+        battle_army::battle_army::BattleArmy, battle_result::battle_result::BattleResult,
+        game_defaults::GameDefaults, nation::Nation, nation_army::nation_army::NationArmy,
+    },
+    enums::ArmyName,
     util::{create_hash_of_defaults, Stats},
     EndBattlePayload,
 };

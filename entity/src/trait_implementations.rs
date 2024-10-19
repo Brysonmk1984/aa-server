@@ -1,6 +1,9 @@
 use std::str::FromStr;
 
-use aa_battles::types::{ArmorType, Army, ArmyName, Nation, NationArmy, WeaponType};
+use aa_battles::{
+    entities::{army::Army, nation::Nation, nation_army::nation_army::NationArmy},
+    enums::{ArmorType, ArmyName, WeaponType},
+};
 use num_traits::ToPrimitive;
 
 use crate::{

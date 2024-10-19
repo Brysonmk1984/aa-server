@@ -1,4 +1,4 @@
-use aa_battles::types::Army;
+use aa_battles::entities::army::Army;
 use entity::armies::Model as ArmyModel;
 use serde::Serialize;
 

@@ -6,7 +6,7 @@ mod routes;
 mod types;
 mod utils;
 
-use aa_battles::types::ArmyName;
+use aa_battles::enums::ArmyName;
 use armies_of_avalon_service::army_service::ArmyQuery;
 use armies_of_avalon_service::cron_service::initialize_scheduler;
 use armies_of_avalon_service::initialization_service::AoeSpreadQuery;
