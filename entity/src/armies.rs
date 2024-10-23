@@ -28,6 +28,7 @@ pub struct Model {
     pub spread: Option<Decimal>,
     pub attack_speed: i32,
     pub cost: i32,
+    pub unlock_level: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

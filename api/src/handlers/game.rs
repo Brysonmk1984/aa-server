@@ -37,7 +37,7 @@ pub async fn get_game_data(
         income_calc_minutes: state.income_calc_minutes.parse::<u8>()?,
         upkeep_calc_minutes: state.upkeep_calc_minutes.parse::<u8>()?,
     };
-    println!("{armies_values:?}");
+    println!("1111 {armies_values:?}");
     let game_defaults = ClientGameDefaults {
         weapon_armor_values: weapon_armor_values.clone(),
         aoe_spread_values: aoe_spread_values.clone(),
