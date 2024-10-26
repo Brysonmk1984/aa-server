@@ -5,6 +5,7 @@ use sea_orm;
 use std::collections::HashMap;
 use std::{env, fmt};
 
+use crate::campaign_service::CampaignQuery;
 use crate::types;
 use crate::types::types::ArmyNameForService;
 use crate::user_service;
@@ -408,26 +409,36 @@ impl NationMutation {
         let nation_option: Option<nations::Model> = Nations::find_by_id(nation_id).one(db).await?;
         let army_option: Option<armies::Model> = Armies::find_by_id(army_id).one(db).await?;
         let army_cost;
+        let army_unlock_level;
         let nation_gold;
+        let highest_level_completed;
 
         if let Some(army) = &army_option {
             army_cost = army.cost;
+            army_unlock_level = army.unlock_level;
         } else {
-            let error_message = format!("army_id: {army_id}");
+            let error_message = format!("Army not found - army_id: {army_id}");
             //return DbErr::RecordNotFound(error_message);
             return Err(DbErr::Custom(error_message));
         }
 
         if let Some(nation) = &nation_option {
             nation_gold = nation.gold;
+
+            highest_level_completed =
+                CampaignQuery::get_highest_campaign_level_completed(db, nation_id).await?;
         } else {
-            let error_message = format!("nation_id: {nation_id}");
+            let error_message = format!("Nation not found - nation_id: {nation_id}");
             //return Err(DbErr::RecordNotFound(error_message));
             return Err(DbErr::Custom(error_message));
         }
 
         if (army_cost > nation_gold) {
             let error_message = format!("Nation does not have enough Gold!");
+            return Err(DbErr::Custom(error_message));
+        } else if (highest_level_completed < army_unlock_level) {
+            let error_message =
+                format!("Army is unavailable until Nation completes level {army_unlock_level}");
             return Err(DbErr::Custom(error_message));
         } else {
             let mut nation_to_be_updated: nations::ActiveModel = nation_option.unwrap().into();
