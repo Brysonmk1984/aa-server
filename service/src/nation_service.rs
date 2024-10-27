@@ -405,7 +405,8 @@ impl NationMutation {
         db: &DbConn,
         nation_id: i32,
         army_id: i32,
-    ) -> Result<nation_armies::Model, DbErr> {
+        quantity: i32,
+    ) -> Result<(nation_armies::Model, i32), DbErr> {
         let nation_option: Option<nations::Model> = Nations::find_by_id(nation_id).one(db).await?;
         let army_option: Option<armies::Model> = Armies::find_by_id(army_id).one(db).await?;
         let army_cost;
@@ -418,7 +419,6 @@ impl NationMutation {
             army_unlock_level = army.unlock_level;
         } else {
             let error_message = format!("Army not found - army_id: {army_id}");
-            //return DbErr::RecordNotFound(error_message);
             return Err(DbErr::Custom(error_message));
         }
 
@@ -429,11 +429,12 @@ impl NationMutation {
                 CampaignQuery::get_highest_campaign_level_completed(db, nation_id).await?;
         } else {
             let error_message = format!("Nation not found - nation_id: {nation_id}");
-            //return Err(DbErr::RecordNotFound(error_message));
             return Err(DbErr::Custom(error_message));
         }
 
-        if (army_cost > nation_gold) {
+        let total_cost = army_cost * quantity;
+
+        if (total_cost > nation_gold) {
             let error_message = format!("Nation does not have enough Gold!");
             return Err(DbErr::Custom(error_message));
         } else if (highest_level_completed < army_unlock_level) {
@@ -442,7 +443,7 @@ impl NationMutation {
             return Err(DbErr::Custom(error_message));
         } else {
             let mut nation_to_be_updated: nations::ActiveModel = nation_option.unwrap().into();
-            nation_to_be_updated.gold = Set(nation_gold - army_cost);
+            nation_to_be_updated.gold = Set(nation_gold - total_cost);
             nation_to_be_updated.update(db).await?;
 
             let matching_army_template = army_option.unwrap();
@@ -457,18 +458,21 @@ impl NationMutation {
 
             match existing_army_of_same_type {
                 Some(nation_army) => {
+                    let updated_count =
+                        nation_army.count + (matching_army_template.count * quantity);
                     let nation_army_to_be_inserted = nation_armies::ActiveModel {
-                        count: Set(nation_army.count + matching_army_template.count),
+                        count: Set(updated_count),
                         ..nation_army.into()
                     };
                     result = nation_army_to_be_inserted.update(db).await;
                 }
                 None => {
                     println!("'IN NONE");
+                    let count = matching_army_template.count * quantity;
                     let nation_army_to_be_inserted = nation_armies::ActiveModel {
                         nation_id: Set(nation_id),
                         army_id: Set(army_id),
-                        count: Set(matching_army_template.count),
+                        count: Set(count),
                         army_name: Set(matching_army_template.name),
                         ..Default::default()
                     };
@@ -476,10 +480,11 @@ impl NationMutation {
                 }
             };
 
-            println!("{result:?}");
-
             match result {
-                Ok(model) => Ok(model),
+                Ok(model) => {
+                    let remaining_gold = nation_gold - total_cost;
+                    Ok((model, remaining_gold))
+                }
                 Err(e) => {
                     dbg!(&e);
                     Err(e)

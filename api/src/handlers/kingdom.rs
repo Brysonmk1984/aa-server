@@ -12,6 +12,7 @@ use axum::{
 };
 
 use entity::{nation_armies::Model as NationArmiesModel, nations::Model as NationsModel};
+use serde::Deserialize;
 use serde_json::Value;
 
 use crate::{utils::error::AppError, AppState};
@@ -41,17 +42,24 @@ pub async fn get_nation_armies_by_nation_id(
     Ok(Json(nation_armies))
 }
 
+#[derive(Deserialize)]
+pub struct BuyArmyPayload {
+    pub quantity: i32,
+}
+
 #[debug_handler]
 pub async fn buy_army(
     State(state): State<AppState>,
     Path((_user_id, nation_id, army_id)): Path<(i32, i32, i32)>,
     Extension(_claims): Extension<HashMap<String, Value>>,
-) -> Result<Json<entity::nation_armies::Model>, AppError> {
+    Json(payload): Json<BuyArmyPayload>,
+) -> Result<Json<(entity::nation_armies::Model, i32)>, AppError> {
     println!("{nation_id} {army_id}");
 
     // todo!("Verify that the user from the auth token is the one buying the army");
     println!("BUYING:{nation_id} {army_id}");
-    let result = NationMutation::buy_army(&state.conn, nation_id, army_id).await?;
+    let result =
+        NationMutation::buy_army(&state.conn, nation_id, army_id, payload.quantity).await?;
 
     Ok(Json(result))
 }
