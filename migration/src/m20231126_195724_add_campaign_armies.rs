@@ -16,9 +16,8 @@ impl MigrationTrait for Migration {
                 (DEFAULT, 2, 13, 500, 'Minute Men Militia'),
                 (DEFAULT, 2, 1, 1000, 'Peacekeeper Monks'),
                 --3
-                (DEFAULT, 3, 13, 500, 'Minute Men Militia'),
-                (DEFAULT, 3, 3, 1000, 'North Watch Longbowmen'),
-                (DEFAULT, 3, 16, 1500, 'Castlegate Crossbowmen'),
+                (DEFAULT, 3, 13, 1000, 'Minute Men Militia'),
+                (DEFAULT, 3, 3, 2000, 'North Watch Longbowmen'),
                 --4
                 (DEFAULT, 4, 13, 1000, 'Minute Men Militia'),
                 (DEFAULT, 4, 7, 2000, 'Amazonian Huntresses'),
