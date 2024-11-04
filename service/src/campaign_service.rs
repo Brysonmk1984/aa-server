@@ -87,7 +87,7 @@ impl CampaignQuery {
         let sql = format!(
             "   SELECT *
             FROM nation_campaign_levels
-            WHERE nation_id = {nation_id}
+            WHERE nation_id = {nation_id} AND completed = TRUE 
                ORDER BY level  DESC
                limit 1"
         );
