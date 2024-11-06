@@ -19,19 +19,19 @@ impl MigrationTrait for Migration {
 
                 CONSTRAINT fk_nation_id
                     FOREIGN KEY(nation_id)
-                        REFERENCES nations(id),
+                        REFERENCES nations(id) ON DELETE CASCADE,
 
                 CONSTRAINT fk_campaign_level_id
                     FOREIGN KEY(campaign_level_id)
-                        REFERENCES campaign_levels(id),
+                        REFERENCES campaign_levels(id) ON DELETE CASCADE,
 
                 CONSTRAINT fk_nation_name
                     FOREIGN KEY(nation_name)
-                        REFERENCES nations(name),
+                        REFERENCES nations(name) ON DELETE CASCADE ON UPDATE CASCADE,
 
                 CONSTRAINT fk_level
                     FOREIGN KEY(level)
-                        REFERENCES campaign_levels(level)
+                        REFERENCES campaign_levels(level) ON DELETE CASCADE
 
             );
         ";

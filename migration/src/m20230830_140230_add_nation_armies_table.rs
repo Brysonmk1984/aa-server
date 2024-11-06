@@ -14,9 +14,9 @@ impl MigrationTrait for Migration {
                 army_id INT NOT NULL,
                 count INT NOT NULL DEFAULT 0,
                 army_name VARCHAR (50) NOT NULL,
-                CONSTRAINT fk_nation FOREIGN KEY(nation_id) REFERENCES nations(id),
-                CONSTRAINT fk_army FOREIGN KEY(army_id) REFERENCES armies(id),
-                CONSTRAINT fk_name FOREIGN KEY(army_name) REFERENCES armies(name)
+                CONSTRAINT fk_nation FOREIGN KEY(nation_id) REFERENCES nations(id) ON DELETE CASCADE,
+                CONSTRAINT fk_army FOREIGN KEY(army_id) REFERENCES armies(id) ON DELETE CASCADE,
+                CONSTRAINT fk_name FOREIGN KEY(army_name) REFERENCES armies(name) ON DELETE CASCADE
             );
         ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());

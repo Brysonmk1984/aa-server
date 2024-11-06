@@ -12,7 +12,7 @@ impl MigrationTrait for Migration {
             ALTER TABLE battles
                 ADD CONSTRAINT fk_nation_campaign_level_id
                         FOREIGN KEY(nation_campaign_level_id)
-                            REFERENCES nation_campaign_levels(id);
+                            REFERENCES nation_campaign_levels(id) ON DELETE CASCADE;
         ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
         raw_sql_migration(manager, statement).await

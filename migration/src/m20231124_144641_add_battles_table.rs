@@ -16,11 +16,11 @@ impl MigrationTrait for Migration {
                 winner INT,
                 CONSTRAINT fk_east_id
                     FOREIGN KEY(nation_id_east)
-                        REFERENCES nations(id),
+                        REFERENCES nations(id) ON DELETE CASCADE,
 
                 CONSTRAINT fk_west_id
                     FOREIGN KEY(nation_id_west)
-                        REFERENCES nations(id)
+                        REFERENCES nations(id) ON DELETE CASCADE
             );
         ";
         let statement = Statement::from_string(manager.get_database_backend(), sql.to_owned());
