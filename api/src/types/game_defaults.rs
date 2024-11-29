@@ -6,6 +6,7 @@ use serde::Serialize;
 pub struct ArmyMeta {
     cost: i32,
     unlock_level: i32,
+    lore: String,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -19,6 +20,7 @@ impl Into<ArmyDefaults> for ArmyModel {
         let meta = ArmyMeta {
             cost: self.cost,
             unlock_level: self.unlock_level,
+            lore: self.lore.clone(),
         };
         let army = Army { ..self.into() };
 
