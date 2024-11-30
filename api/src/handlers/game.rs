@@ -3,6 +3,7 @@ use crate::{
     ARMY_DEFAULT_CELL, WEAPON_ARMOR_CELL,
 };
 
+use aa_battles::{IS_MARCHING_AGILITY_MOD, MIN_RANGE_ATTACK_AIR};
 use axum::{debug_handler, extract::State, Json};
 use serde::Serialize;
 use std::{collections::HashMap, env};
@@ -60,12 +61,18 @@ struct UpkeepDefaults {
 }
 
 #[derive(Serialize)]
+pub struct GameConstants {
+    MIN_RANGE_ATTACK_AIR: i32,
+    IS_MARCHING_AGILITY_MOD: f64,
+}
+#[derive(Serialize)]
 pub struct ClientGameDefaults {
     weapon_armor_values: HashMap<String, f64>,
     aoe_spread_values: HashMap<i32, Vec<(f64, i32)>>,
     income: IncomeDefaults,
     upkeep: UpkeepDefaults,
     armies: Vec<ArmyDefaults>,
+    constants: GameConstants,
 }
 
 #[debug_handler]
@@ -88,13 +95,18 @@ pub async fn get_game_data(
         tiers: UPKEEP_TIERS,
     };
 
-    println!("1111 {armies_values:?}");
+    let constants = GameConstants {
+        MIN_RANGE_ATTACK_AIR,
+        IS_MARCHING_AGILITY_MOD,
+    };
+
     let game_defaults = ClientGameDefaults {
         weapon_armor_values: weapon_armor_values.clone(),
         aoe_spread_values: aoe_spread_values.clone(),
         income: income_defaults,
         upkeep: upkeep_defaults,
         armies: armies_values.clone(),
+        constants,
     };
 
     Ok(Json(game_defaults))

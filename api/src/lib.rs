@@ -161,7 +161,7 @@ async fn set_aoe_spread_hash(state: &AppState) -> anyhow::Result<()> {
             acc
         },
     );
-    println!("{update_hash_map:?}");
+
     let _ = AOE_SPREAD_CELL.set(update_hash_map);
     Ok(())
 }
@@ -229,7 +229,7 @@ pub async fn initialize_defaults_to_memory(state: &AppState) -> anyhow::Result<(
 
     // let army_default_hash = create_hash_of_defaults(army_defaults);
     // println!("{army_default_hash:?}");
-    println!("{armies:?}");
+
     let _ = ARMY_DEFAULT_CELL.set(armies);
     Ok(())
 }
