@@ -14,6 +14,6 @@ serde = { version = "1", features = ["derive"] }
 aa-battles = { git = "https://github.com/Brysonmk1984/aa-battles" }
 num-traits = "0.2.17"
 rust_decimal_macros = "1.36"
-sea-orm = { version = "1.0.1", features = [ "sqlx-postgres", "runtime-actix-native-tls", "macros" ], default-features = false }
+sea-orm = { version = "1.1.1", features = [ "sqlx-postgres", "runtime-actix-native-tls", "macros" ], default-features = false }
 
 
