@@ -23,4 +23,4 @@ migration = { path = "../migration" }
 #aa-battles = {path = "../../aa-battles"}
 aa-battles = { git = "https://github.com/Brysonmk1984/aa-battles" }
 jsonwebtoken = "9.2.0"
-tracing = "0.1.40"
+tracing = "0.1.41"
