@@ -115,27 +115,8 @@ pub async fn run_battle(
 
     let completed_level = end_battle_payload.battle_result.winner == Some(Belligerent::EasternArmy);
     let mut reward: Option<(i32, Reward)> = None;
-
     let winner = if completed_level {
-        // determine reward
-        reward = Some(determine_reward(&level));
-        let (reward_amount, reward_type) = reward.unwrap();
-        // affects nation_armies and nation domain
-        match reward_type {
-            Reward::Gold => {
-                NationMutation::update_gold(&state.conn, east_nation.id, reward_amount).await?;
-            }
-            Reward::Enlist(army) => {
-                NationMutation::upsert_nation_army(
-                    &state.conn,
-                    east_nation.id,
-                    ArmyNameForService::from_str(&army.to_string()).unwrap(),
-                    reward_amount,
-                )
-                .await?;
-            }
-        };
-
+        println!("eastern win");
         east_nation.id
     } else {
         println!("western win");
@@ -189,6 +170,7 @@ pub async fn run_battle(
         .collect();
     println!("vec_post_battle_nation_army_values: {vec_post_battle_eastern_army_values:?}");
 
+    /* UPDATE ARMY COUNT */
     // Disable updating of armies after battle if "disableCountAdjustment" query param is true
     if (!query.disableCountAdjustment.unwrap_or_else(|| false)) {
         NationMutation::adjust_nation_army_counts(
@@ -197,6 +179,29 @@ pub async fn run_battle(
             &state.conn,
         )
         .await?;
+    }
+
+    /* UPDATE ARMIES OR GOLD FROM REWARD */
+    if winner == east_nation.id {
+        // determine reward
+        reward = Some(determine_reward(&level));
+        println!("{reward:?}");
+        let (reward_amount, reward_type) = reward.unwrap();
+        // affects nation_armies and nation domain
+        match reward_type {
+            Reward::Gold => {
+                NationMutation::update_gold(&state.conn, east_nation.id, reward_amount).await?;
+            }
+            Reward::Enlist(army) => {
+                NationMutation::upsert_nation_army(
+                    &state.conn,
+                    east_nation.id,
+                    ArmyNameForService::from_str(&army.to_string()).unwrap(),
+                    reward_amount,
+                )
+                .await?;
+            }
+        };
     }
 
     let setting = BattlesModel {

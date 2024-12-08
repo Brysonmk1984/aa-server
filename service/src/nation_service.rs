@@ -549,24 +549,44 @@ impl NationMutation {
             .filter(armies::Column::Name.eq(army_name.to_string()))
             .one(db)
             .await?;
-
+        println!("{army_option:?}");
         let army_id = army_option.unwrap().id;
-
-        let existing_army_of_same_type = NationArmies::find()
+        println!("{army_id}");
+        let existing_army_of_same_type: Option<NationArmiesModel> = NationArmies::find()
             .filter(nation_armies::Column::ArmyId.eq(army_id))
             .filter(nation_armies::Column::NationId.eq(nation_id))
             .one(db)
             .await?;
+        println!("{existing_army_of_same_type:?}");
 
         let mut result;
 
         match existing_army_of_same_type {
             Some(nation_army) => {
-                let nation_army_to_be_inserted = nation_armies::ActiveModel {
-                    count: Set(nation_army.count + count),
-                    ..nation_army.into()
+                println!("SHOULDBE 133 {}", nation_army.id);
+                let pear: nation_armies::Model = NationArmies::find_by_id(nation_army.id)
+                    .one(db)
+                    .await?
+                    .unwrap();
+
+                let updated_count = nation_army.count + count;
+
+                println!("{} + {} = {}", nation_army.count, count, updated_count);
+                // let mut active_model: nation_armies::ActiveModel = pear.into_active_model();
+                // active_model.count = ActiveValue::Set(updated_count);
+                // println!("IN SOME: {active_model:?}");
+                // active_model.update(db).await;
+
+                let nation_cl_active_model = nation_armies::ActiveModel {
+                    id: Set(pear.id),
+                    nation_id: Set(pear.nation_id),
+                    army_id: Set(pear.army_id),
+                    count: Set(updated_count),
+                    army_name: Set(pear.army_name),
+                    ..Default::default()
                 };
-                result = nation_army_to_be_inserted.update(db).await?;
+                println!("IN SOME: {nation_cl_active_model:?}");
+                result = nation_cl_active_model.update(db).await;
             }
             None => {
                 let nation_army_to_be_inserted = nation_armies::ActiveModel {
@@ -576,9 +596,11 @@ impl NationMutation {
                     army_name: Set(army_name.to_string()),
                     ..Default::default()
                 };
-                result = nation_army_to_be_inserted.insert(db).await?;
+                println!("IN NONE: {nation_army_to_be_inserted:?}");
+                result = nation_army_to_be_inserted.insert(db).await;
             }
         }
+        println!("RESULT: {result:?}");
         Ok(())
     }
 
