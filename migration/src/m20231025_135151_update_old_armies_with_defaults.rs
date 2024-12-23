@@ -60,16 +60,16 @@ impl MigrationTrait for Migration {
             spread = c.spread
             attack_speed = c.attack_speed
         from (values
-            ('Peacekeeper Monks', 'TBD', 1000, 0.00, FALSE, 5, 1.00, blunt, unarmored, 0.25, 5, 0.00, 2.00, 2),
+            ('Peacekeeper Monks', 'TBD', 1000, 0.00, FALSE, 5, 1.00, blunt, unarmored, 0.25, 10, 0.00, 2.00, 2),
             ('Imperial Legionnaire', 'TBD', 500, 0.75, FALSE, 10, 0.80, edged, plate, 0.10, 5, 0.00, 1.00, 1),
-            ('North Watch Longbowmen', 'TBD', 750, 0.00, FALSE, 150, 0.50, piercing, unarmored, 0.10, 5, 0.00, 1.00, 1),
-            ('Highborn Cavalry', 'TBD', 500, 0.50, FALSE, 10, 0.90, edged, plate, 0.25, 10, 0.50, 3.00, 1),
-            ('Rōnin Immortals', 'TBD', 750, 0.00, FALSE, 5, 0.80, edged, plate, 0.35, 5, 0.00, 1.00, 2),
-            ('Shinobi Martial Artists', 'TBD', 750, 0.00, FALSE, 5, 0.80, blunt, leather, 0.50, 5, 0.00, 1.00, 3),
+            ('North Watch Longbowmen', 'TBD', 750, 0.00, FALSE, 125, 0.50, piercing, unarmored, 0.10, 5, 0.00, 1.00, 1),
+            ('Highborn Cavalry', 'TBD', 500, 0.50, FALSE, 10, 0.80, edged, plate, 0.25, 15, 0.50, 3.00, 1),
+            ('Rōnin Immortals', 'TBD', 750, 0.00, FALSE, 5, 0.80, edged, plate, 0.35, 10, 0.00, 2.00, 2),
+            ('Shinobi Martial Artists', 'TBD', 750, 0.00, FALSE, 5, 0.80, blunt, leather, 0.50, 10, 0.00, 2.00, 3),
             ('Amazonian Huntresses', 'TBD', 1000, 0.25, FALSE, 15, 0.90, piercing, leather, 0.35, 10, 0.00, 1.00, 2),
-            ('Avian Cliff Dwellers', 'TBD', 750, 0.00, TRUE, 10, 0.80, edged, leather, 0.25, 10, 0.00, 3.00, 1),
-            ('Magi Enforcers', 'TBD', 500, 0.00, FALSE, 15, 1.00, magic, chain, 0.20, 5, 1.00, 1.00, 1),
-            ('Skull Clan Death Cultists', 'TBD', 500, 0.00, FALSE, 100, 0.75, magic, unarmored, 0.10, 5, 2.00, 1.00, 1)
+            ('Avian Cliff Dwellers', 'TBD', 750, 0.00, TRUE, 10, 0.80, edged, leather, 0.25, 15, 0.00, 3.00, 1),
+            ('Magi Enforcers', 'TBD', 500, 0.00, FALSE, 15, 1.00, magic, chain, 0.20, 10, 1.00, 2.00, 1),
+            ('Skull Clan Death Cultists', 'TBD', 500, 0.00, FALSE, 100, 0.75, magic, unarmored, 0.10, 10, 2.00, 1.00, 1)
         ) as c(name, lore, count, shield_rating, flying, range, accuracy, weapon_type, armor_type, agility, speed, aoe, spread, attack_speed) 
         where c.id = a.id;
         ";
