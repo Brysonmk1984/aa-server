@@ -45,6 +45,8 @@ mod m20240304_140403_insert_weapon_armor_values;
 mod m20240502_131418_remove_nation_name_requirement;
 mod m20240901_152007_create_aoe_spread_table;
 mod m20240901_152645_insert_aoe_spread_values;
+mod m20241223_174207_army_defaults_non_combat;
+mod m20241223_181346_army_defaults_combat;
 mod utils;
 
 pub struct Migrator;
@@ -99,6 +101,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20240502_131418_remove_nation_name_requirement::Migration),
             Box::new(m20240901_152007_create_aoe_spread_table::Migration),
             Box::new(m20240901_152645_insert_aoe_spread_values::Migration),
+            Box::new(m20241223_174207_army_defaults_non_combat::Migration),
+            Box::new(m20241223_181346_army_defaults_combat::Migration),
         ]
     }
 }
