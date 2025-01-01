@@ -9,7 +9,7 @@ edition = "2021"
 armies-of-avalon-service = { path = "../service" }
 tokio = { version = "1.40", features = ["full"] }
 axum = { version = "0.7", features = ['macros']}
-axum-extra = { version = "0.9.1", features = ["typed-header"] }
+axum-extra = { version = "0.10.0", features = ["typed-header"] }
 tower = "0.5"
 tower-http = { version = "0.5", features = ["fs", "cors", "trace"] }
 tower-cookies = "0.10.0"
